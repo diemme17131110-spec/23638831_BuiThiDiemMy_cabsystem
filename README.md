@@ -772,4 +772,521 @@ mindmap
 | **BR11** | Báo cáo quản trị | Medium |
 | **BR12** | Bảo mật dữ liệu | **Critical** |
 | **BR13** | Đảm bảo ổn định và sẵn sàng | **Critical** |
-| **BR14** | Khả năng mở rộng trong tương lai | High |s
+| **BR14** | Khả năng mở rộng trong tương lai | High |
+
+# CAB System – Phân rã Functional Requirements
+
+## 1. Tổng quan
+
+```mermaid
+flowchart TD
+    A[CAB System] --> B[FR01 - Quản lý tài khoản]
+    A --> C[FR02 - Quản lý khách hàng]
+    A --> D[FR03 - Quản lý tài xế]
+    A --> E[FR04 - Đặt xe]
+    A --> F[FR05 - Tìm và phân công tài xế]
+    A --> G[FR06 - Quản lý chuyến đi]
+    A --> H[FR07 - Tính cước và thanh toán]
+    A --> I[FR08 - Thông báo]
+    A --> J[FR09 - Đánh giá]
+    A --> K[FR10 - Quản lý vận hành]
+    A --> L[FR11 - Báo cáo]
+    A --> M[FR12 - Phân quyền và bảo mật]
+    A --> N[FR13 - Quản lý vị trí]
+```
+
+---
+
+# 2. FR01 – Quản lý tài khoản
+
+### FR01.1 – Đăng ký tài khoản
+
+- Khách hàng có thể tạo tài khoản.
+- Tài xế có thể đăng ký tài khoản.
+- Nhân viên vận hành có thể tạo tài khoản tài xế.
+
+### FR01.2 – Đăng nhập
+
+- Người dùng nhập thông tin xác thực.
+- Hệ thống kiểm tra thông tin đăng nhập.
+- Hệ thống cho phép truy cập theo quyền.
+
+### FR01.3 – Cập nhật thông tin tài khoản
+
+- Người dùng xem thông tin cá nhân.
+- Người dùng cập nhật thông tin cá nhân.
+- Hệ thống lưu thông tin mới.
+
+### FR01.4 – Xác thực người dùng
+
+- Xác thực trước khi sử dụng các chức năng yêu cầu tài khoản.
+- Từ chối truy cập khi thông tin xác thực không hợp lệ.
+
+---
+
+# 3. FR02 – Quản lý khách hàng
+
+### FR02.1 – Quản lý hồ sơ khách hàng
+
+- Xem thông tin cá nhân.
+- Cập nhật thông tin cá nhân.
+
+### FR02.2 – Quản lý lịch sử chuyến đi
+
+- Xem danh sách chuyến đã thực hiện.
+- Xem thông tin từng chuyến.
+- Xem số tiền phải trả.
+
+---
+
+# 4. FR03 – Quản lý tài xế
+
+### FR03.1 – Quản lý hồ sơ tài xế
+
+- Tạo tài khoản tài xế.
+- Cập nhật hồ sơ tài xế.
+- Xem thông tin tài xế.
+
+### FR03.2 – Quản lý phương tiện
+
+- Thêm thông tin phương tiện.
+- Cập nhật thông tin phương tiện.
+- Quản lý phương tiện của tài xế.
+
+### FR03.3 – Quản lý trạng thái tài xế
+
+- Chuyển sang trạng thái sẵn sàng.
+- Chuyển sang trạng thái không sẵn sàng.
+- Theo dõi trạng thái hoạt động.
+
+---
+
+# 5. FR04 – Đặt xe
+
+### FR04.1 – Nhập thông tin chuyến đi
+
+- Nhập điểm đón.
+- Nhập điểm đến.
+- Chọn loại xe/dịch vụ.
+
+### FR04.2 – Tạo yêu cầu đặt xe
+
+- Khách hàng gửi yêu cầu.
+- Hệ thống tạo chuyến ở trạng thái đang tìm tài xế.
+
+### FR04.3 – Theo dõi yêu cầu đặt xe
+
+Khách hàng có thể biết:
+
+- Hệ thống đang tìm tài xế.
+- Tài xế nào đã nhận chuyến.
+- Thời gian dự kiến tài xế đến.
+- Trạng thái hiện tại của chuyến.
+
+### FR04.4 – Hủy yêu cầu
+
+- Cho phép xử lý việc hủy chuyến theo chính sách doanh nghiệp.
+- Chính sách hủy cần được BA xác nhận thêm.
+
+---
+
+# 6. FR05 – Tìm và phân công tài xế
+
+### FR05.1 – Xác định tài xế phù hợp
+
+Hệ thống kiểm tra:
+
+- Vị trí tài xế.
+- Trạng thái sẵn sàng.
+- Loại xe.
+- Các tiêu chí vận hành.
+
+### FR05.2 – Ưu tiên tài xế
+
+- Ưu tiên tài xế phù hợp.
+- Ưu tiên tài xế gần khách hàng.
+
+### FR05.3 – Gửi yêu cầu cho tài xế
+
+- Gửi thông báo chuyến mới.
+- Cho phép tài xế chấp nhận.
+- Cho phép tài xế từ chối.
+
+### FR05.4 – Xử lý tài xế không phản hồi
+
+- Xác định tài xế không phản hồi.
+- Chuyển sang tìm tài xế khác.
+
+### FR05.5 – Xử lý tài xế từ chối
+
+- Ghi nhận việc từ chối.
+- Tìm tài xế tiếp theo.
+
+### FR05.6 – Không tìm được tài xế
+
+- Xác định không còn tài xế phù hợp.
+- Thông báo cho khách hàng.
+
+---
+
+# 7. FR06 – Quản lý chuyến đi
+
+### FR06.1 – Quản lý trạng thái chuyến
+
+```mermaid
+stateDiagram-v2
+    [*] --> Searching: Tạo yêu cầu
+    Searching --> Assigned: Tài xế nhận chuyến
+    Searching --> Searching: Từ chối / Không phản hồi
+    Searching --> NoDriver: Không tìm được tài xế
+
+    Assigned --> Arriving: Tài xế đang đến
+    Arriving --> Arrived: Đã đến điểm đón
+    Arrived --> PickedUp: Đã đón khách
+    PickedUp --> InProgress: Đang di chuyển
+    InProgress --> Completed: Hoàn thành chuyến
+
+    Completed --> Payment: Tính cước
+    Payment --> Finished: Thanh toán hoàn tất
+
+    NoDriver --> [*]
+    Finished --> [*]
+```
+
+### FR06.2 – Cập nhật trạng thái chuyến
+
+Tài xế có thể cập nhật:
+
+- Đã nhận chuyến.
+- Đã đến điểm đón.
+- Đã đón khách.
+- Đang di chuyển.
+- Hoàn thành chuyến.
+
+### FR06.3 – Theo dõi chuyến
+
+- Khách hàng theo dõi chuyến.
+- Nhân viên vận hành theo dõi chuyến đang diễn ra.
+- Hệ thống lưu lịch sử trạng thái.
+
+---
+
+# 8. FR07 – Tính cước và thanh toán
+
+### FR07.1 – Tính cước
+
+- Xác định loại dịch vụ.
+- Sử dụng thông tin chuyến đi.
+- Tính số tiền khách hàng phải trả.
+
+### FR07.2 – Thanh toán tiền mặt
+
+- Ghi nhận hình thức thanh toán tiền mặt.
+- Lưu trạng thái thanh toán.
+
+### FR07.3 – Thanh toán điện tử
+
+- Gửi yêu cầu đến nhà cung cấp thanh toán.
+- Nhận kết quả giao dịch.
+- Cập nhật trạng thái thanh toán.
+
+### FR07.4 – Thanh toán thất bại
+
+- Thông báo cho khách hàng.
+- Ghi nhận giao dịch thất bại.
+- Cho phép xử lý lại theo chính sách doanh nghiệp.
+
+### FR07.5 – Không lưu dữ liệu nhạy cảm
+
+- Không lưu trực tiếp thông tin nhạy cảm của thẻ/tài khoản thanh toán trong CAB System.
+
+---
+
+# 9. FR08 – Quản lý thông báo
+
+### FR08.1 – Thông báo cho khách hàng
+
+Gửi thông báo khi:
+
+- Yêu cầu đặt xe được tiếp nhận.
+- Tài xế nhận chuyến.
+- Tài xế đến điểm đón.
+- Chuyến hoàn thành.
+- Thanh toán có kết quả.
+
+### FR08.2 – Thông báo cho tài xế
+
+- Có chuyến mới.
+- Có thay đổi liên quan đến chuyến.
+
+### FR08.3 – Quản lý kênh thông báo
+
+- Hỗ trợ kênh thông báo hiện tại.
+- Có khả năng bổ sung thêm kênh trong tương lai.
+
+---
+
+# 10. FR09 – Đánh giá tài xế
+
+### FR09.1 – Đánh giá sau chuyến
+
+- Khách hàng có thể đánh giá tài xế sau khi chuyến hoàn thành.
+- Hệ thống lưu kết quả đánh giá.
+
+### FR09.2 – Xem thông tin đánh giá
+
+- Doanh nghiệp có thể sử dụng dữ liệu đánh giá để đánh giá hiệu quả tài xế.
+
+---
+
+# 11. FR10 – Quản lý vận hành
+
+### FR10.1 – Quản lý khách hàng
+
+- Xem thông tin khách hàng.
+- Tra cứu khách hàng.
+
+### FR10.2 – Quản lý tài xế
+
+- Xem thông tin tài xế.
+- Kiểm tra trạng thái tài xế.
+- Quản lý tài khoản tài xế.
+
+### FR10.3 – Quản lý phương tiện
+
+- Xem thông tin phương tiện.
+- Cập nhật thông tin phương tiện.
+
+### FR10.4 – Theo dõi chuyến đi
+
+- Xem các chuyến đang diễn ra.
+- Kiểm tra trạng thái chuyến.
+- Kiểm tra trạng thái tài xế.
+
+### FR10.5 – Xử lý sự cố
+
+- Tiếp nhận các trường hợp chuyến bị lỗi.
+- Hỗ trợ xử lý chuyến.
+- Tra cứu lịch sử giao dịch.
+
+---
+
+# 12. FR11 – Báo cáo
+
+### FR11.1 – Báo cáo chuyến đi
+
+- Tổng số chuyến.
+- Số chuyến hoàn thành.
+- Số chuyến bị hủy.
+
+### FR11.2 – Báo cáo doanh thu
+
+- Tổng doanh thu.
+- Doanh thu theo khoảng thời gian.
+
+### FR11.3 – Báo cáo hiệu quả tài xế
+
+- Số chuyến thực hiện.
+- Tỷ lệ hoàn thành.
+- Dữ liệu đánh giá/hiệu quả hoạt động.
+
+---
+
+# 13. FR12 – Phân quyền và bảo mật
+
+### FR12.1 – Phân quyền người dùng
+
+Hệ thống phân biệt các nhóm:
+
+- Customer.
+- Driver.
+- Operations Staff.
+- Administrator.
+
+### FR12.2 – Kiểm soát quyền truy cập
+
+- Người dùng chỉ được truy cập chức năng được cấp quyền.
+- Các thao tác quản trị nhạy cảm phải được kiểm soát.
+
+### FR12.3 – Audit Log
+
+- Ghi nhận các thao tác quan trọng.
+- Lưu thông tin phục vụ kiểm tra khi có sự cố.
+
+---
+
+# 14. FR13 – Quản lý vị trí
+
+### FR13.1 – Cập nhật vị trí tài xế
+
+- Ghi nhận vị trí của tài xế.
+- Cập nhật vị trí trong quá trình làm việc.
+
+### FR13.2 – Tìm tài xế gần khách hàng
+
+- Sử dụng vị trí khách hàng.
+- Sử dụng vị trí tài xế.
+- Xác định tài xế phù hợp và gần khách hàng.
+
+### FR13.3 – Hỗ trợ dự kiến thời gian đến
+
+- Sử dụng dữ liệu vị trí để hỗ trợ ước tính thời gian tài xế đến.
+
+---
+
+# 15. Functional Requirement Tree
+
+```mermaid
+mindmap
+    root((CAB System))
+        FR01 Account
+            Đăng ký
+            Đăng nhập
+            Cập nhật thông tin
+            Xác thực
+
+        FR02 Customer
+            Hồ sơ
+            Lịch sử chuyến
+            Xem số tiền
+            Đánh giá
+
+        FR03 Driver
+            Hồ sơ
+            Phương tiện
+            Trạng thái
+            Sẵn sàng nhận chuyến
+
+        FR04 Booking
+            Điểm đón
+            Điểm đến
+            Loại xe
+            Tạo yêu cầu
+            Theo dõi
+            Hủy chuyến
+
+        FR05 Driver Matching
+            Tìm tài xế
+            Kiểm tra vị trí
+            Kiểm tra trạng thái
+            Ưu tiên tài xế
+            Gửi yêu cầu
+            Từ chối
+            Không phản hồi
+            Tìm tài xế tiếp theo
+
+        FR06 Trip
+            Nhận chuyến
+            Đến điểm đón
+            Đón khách
+            Di chuyển
+            Hoàn thành
+            Theo dõi
+
+        FR07 Payment
+            Tính cước
+            Tiền mặt
+            Điện tử
+            Thanh toán thất bại
+            Xử lý lại
+
+        FR08 Notification
+            Khách hàng
+            Tài xế
+            Trạng thái chuyến
+            Thanh toán
+            Mở rộng kênh
+
+        FR09 Rating
+            Đánh giá tài xế
+            Lưu đánh giá
+
+        FR10 Operations
+            Khách hàng
+            Tài xế
+            Phương tiện
+            Chuyến đi
+            Xử lý sự cố
+            Giao dịch
+
+        FR11 Reporting
+            Số chuyến
+            Doanh thu
+            Hoàn thành
+            Hủy
+            Hiệu quả tài xế
+
+        FR12 Security
+            Authentication
+            Authorization
+            Audit Log
+
+        FR13 Location
+            Vị trí tài xế
+            Tìm tài xế gần
+            ETA
+```
+
+# 16. Các chức năng ưu tiên cho MVP 7 tuần
+
+```mermaid
+flowchart TD
+    A[MVP CAB System] --> B[Customer]
+    A --> C[Driver]
+    A --> D[Booking]
+    A --> E[Driver Matching]
+    A --> F[Trip]
+    A --> G[Payment]
+    A --> H[Notification]
+    A --> I[Operations]
+
+    B --> B1[Đăng ký / Đăng nhập]
+    B --> B2[Đặt xe]
+    B --> B3[Theo dõi chuyến]
+
+    C --> C1[Đăng nhập]
+    C --> C2[Sẵn sàng]
+    C --> C3[Nhận / Từ chối]
+
+    D --> D1[Điểm đón]
+    D --> D2[Điểm đến]
+    D --> D3[Loại xe]
+
+    E --> E1[Tìm tài xế gần]
+    E --> E2[Phân công]
+    E --> E3[Tìm lại khi từ chối]
+
+    F --> F1[Đến điểm đón]
+    F --> F2[Đón khách]
+    F --> F3[Di chuyển]
+    F --> F4[Hoàn thành]
+
+    G --> G1[Tính cước]
+    G --> G2[Tiền mặt]
+    G --> G3[Điện tử]
+
+    H --> H1[Thông báo trạng thái]
+
+    I --> I1[Theo dõi chuyến]
+    I --> I2[Quản lý tài xế]
+```
+
+## 17. Mối quan hệ từ Business Requirement → Functional Requirement
+
+| Business Requirement | Functional Requirements chính |
+|---|---|
+| **BR01 – Tự động hóa đặt xe** | FR01, FR04 |
+| **BR02 – Tìm và phân công tài xế** | FR03, FR05, FR13 |
+| **BR03 – Phục vụ quy mô lớn** | Liên quan chủ yếu đến NFR |
+| **BR04 – Quản lý vòng đời chuyến** | FR04, FR06 |
+| **BR05 – Theo dõi trạng thái/vị trí** | FR06, FR08, FR13 |
+| **BR06 – Tính cước/thanh toán** | FR07 |
+| **BR07 – Tích hợp bên ngoài** | FR07, FR08, FR13 |
+| **BR08 – Thông báo** | FR08 |
+| **BR09 – Quản lý vận hành** | FR10 |
+| **BR10 – Phân quyền** | FR12 |
+| **BR11 – Báo cáo** | FR11 |
+| **BR12 – Bảo mật** | FR01, FR12 |
+| **BR13 – Ổn định/sẵn sàng** | NFR |
+| **BR14 – Mở rộng tương lai** | NFR |
+
