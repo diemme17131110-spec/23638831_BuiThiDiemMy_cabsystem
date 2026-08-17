@@ -485,3 +485,291 @@ Do thời gian thực hiện chỉ **7 tuần**, các chức năng không ảnh 
 | **Tuần 5** | **Fare & Payment** | Tính cước, thanh toán tiền mặt, thanh toán điện tử và xử lý thanh toán thất bại |
 | **Tuần 6** | **Notification & Operation Management** | Gửi thông báo, theo dõi chuyến, quản lý khách hàng/tài xế/chuyến đi và xử lý sự cố |
 | **Tuần 7** | **Reporting, Testing & Deployment** | Báo cáo cơ bản, kiểm thử, sửa lỗi, bảo mật và triển khai hệ thống |
+
+
+# CAB System – Business Requirements
+
+## 1. Tổng quan
+
+Business Requirements mô tả **doanh nghiệp muốn đạt được điều gì** khi xây dựng CAB System.
+
+Các yêu cầu được xác định từ đề bài gồm:
+
+---
+
+## BR01 – Tự động hóa quy trình đặt xe
+
+**Business Requirement:**
+
+> Hệ thống phải giúp doanh nghiệp tự động hóa quy trình đặt xe, từ khi khách hàng tạo yêu cầu đến khi chuyến đi hoàn thành.
+
+**Mục tiêu kinh doanh:**
+
+- Giảm sự phụ thuộc vào tổng đài.
+- Giảm việc phân công tài xế thủ công.
+- Tăng tốc độ xử lý yêu cầu đặt xe.
+- Nâng cao trải nghiệm khách hàng.
+
+---
+
+## BR02 – Tự động tìm và phân công tài xế
+
+**Business Requirement:**
+
+> Hệ thống phải hỗ trợ doanh nghiệp tự động tìm và phân công tài xế phù hợp dựa trên vị trí, trạng thái sẵn sàng và các tiêu chí vận hành.
+
+**Mục tiêu kinh doanh:**
+
+- Giảm thời gian tìm tài xế.
+- Tăng hiệu quả sử dụng tài xế.
+- Ưu tiên tài xế phù hợp và gần khách hàng.
+- Giảm thao tác thủ công của nhân viên vận hành.
+
+---
+
+## BR03 – Đảm bảo khả năng phục vụ khách hàng và tài xế ở quy mô lớn
+
+**Business Requirement:**
+
+> Hệ thống phải có khả năng phục vụ số lượng lớn khách hàng và tài xế, đặc biệt trong thời điểm nhu cầu tăng cao.
+
+**Mục tiêu kinh doanh:**
+
+- Đáp ứng nhu cầu tăng trưởng.
+- Hạn chế tình trạng hệ thống quá tải.
+- Hỗ trợ doanh nghiệp mở rộng dịch vụ.
+
+---
+
+## BR04 – Quản lý toàn bộ vòng đời chuyến đi
+
+**Business Requirement:**
+
+> Hệ thống phải hỗ trợ doanh nghiệp quản lý toàn bộ quá trình của một chuyến đi từ lúc tạo yêu cầu, tìm tài xế, nhận chuyến, thực hiện chuyến đến khi hoàn thành.
+
+**Mục tiêu kinh doanh:**
+
+- Theo dõi chính xác trạng thái chuyến.
+- Giảm sai sót trong vận hành.
+- Cung cấp thông tin minh bạch cho khách hàng và tài xế.
+
+---
+
+## BR05 – Cung cấp thông tin và trạng thái chuyến đi theo thời gian thực
+
+**Business Requirement:**
+
+> Hệ thống phải cung cấp thông tin về trạng thái chuyến đi và vị trí tài xế để khách hàng và bộ phận vận hành có thể theo dõi chuyến.
+
+**Mục tiêu kinh doanh:**
+
+- Nâng cao trải nghiệm khách hàng.
+- Giúp khách hàng biết thời gian dự kiến tài xế đến.
+- Hỗ trợ nhân viên vận hành giám sát chuyến đi.
+- Nâng cao khả năng điều phối.
+
+---
+
+## BR06 – Hỗ trợ tính cước và thanh toán
+
+**Business Requirement:**
+
+> Hệ thống phải hỗ trợ doanh nghiệp quản lý việc tính cước và thanh toán cho các chuyến đi.
+
+**Mục tiêu kinh doanh:**
+
+- Tự động hóa việc tính tiền.
+- Hỗ trợ thanh toán tiền mặt và điện tử.
+- Quản lý tập trung thông tin giao dịch.
+- Giảm sai sót trong quá trình thanh toán.
+
+---
+
+## BR07 – Tích hợp với các dịch vụ bên ngoài
+
+**Business Requirement:**
+
+> Hệ thống phải có khả năng tích hợp với các nhà cung cấp dịch vụ bên ngoài như thanh toán, bản đồ/GPS và thông báo.
+
+**Mục tiêu kinh doanh:**
+
+- Giảm việc xây dựng lại các dịch vụ đã có.
+- Tăng khả năng mở rộng.
+- Có thể thay đổi hoặc bổ sung nhà cung cấp trong tương lai.
+
+---
+
+## BR08 – Cung cấp hệ thống thông báo
+
+**Business Requirement:**
+
+> Hệ thống phải đảm bảo khách hàng và tài xế nhận được thông tin quan trọng trong quá trình đặt và thực hiện chuyến đi.
+
+**Mục tiêu kinh doanh:**
+
+- Cải thiện khả năng giao tiếp giữa hệ thống, khách hàng và tài xế.
+- Giảm tình trạng bỏ lỡ thông tin.
+- Tăng tính minh bạch của quá trình vận hành.
+
+---
+
+## BR09 – Hỗ trợ quản lý và vận hành tập trung
+
+**Business Requirement:**
+
+> Hệ thống phải cung cấp khả năng quản lý tập trung khách hàng, tài xế, phương tiện, chuyến đi và giao dịch cho bộ phận vận hành.
+
+**Mục tiêu kinh doanh:**
+
+- Nâng cao hiệu quả quản lý.
+- Giảm thao tác thủ công.
+- Hỗ trợ xử lý các trường hợp chuyến bị lỗi.
+- Có đầy đủ dữ liệu để theo dõi hoạt động.
+
+---
+
+## BR10 – Hỗ trợ phân quyền quản trị
+
+**Business Requirement:**
+
+> Hệ thống phải đảm bảo các chức năng quản trị được kiểm soát theo quyền của từng nhân viên.
+
+**Mục tiêu kinh doanh:**
+
+- Hạn chế truy cập trái phép.
+- Bảo vệ các thao tác nhạy cảm.
+- Giảm rủi ro do sai sót hoặc lạm dụng quyền.
+
+---
+
+## BR11 – Cung cấp báo cáo quản trị
+
+**Business Requirement:**
+
+> Hệ thống phải cung cấp dữ liệu và báo cáo giúp ban lãnh đạo đánh giá hoạt động kinh doanh và hiệu quả vận hành.
+
+**Mục tiêu kinh doanh:**
+
+- Theo dõi số lượng chuyến.
+- Theo dõi doanh thu.
+- Theo dõi tỷ lệ hoàn thành.
+- Theo dõi tỷ lệ hủy.
+- Đánh giá hiệu quả hoạt động của tài xế.
+- Hỗ trợ ra quyết định.
+
+---
+
+## BR12 – Đảm bảo bảo mật dữ liệu
+
+**Business Requirement:**
+
+> Hệ thống phải bảo vệ thông tin cá nhân, thông tin phương tiện, dữ liệu vị trí và dữ liệu giao dịch của khách hàng và tài xế.
+
+**Mục tiêu kinh doanh:**
+
+- Bảo vệ dữ liệu người dùng.
+- Giảm rủi ro mất hoặc lộ dữ liệu.
+- Tăng mức độ tin cậy của dịch vụ.
+- Đáp ứng yêu cầu bảo mật của doanh nghiệp.
+
+---
+
+## BR13 – Đảm bảo tính ổn định và sẵn sàng
+
+**Business Requirement:**
+
+> Hệ thống phải duy trì hoạt động ổn định và hạn chế ảnh hưởng dây chuyền khi một thành phần gặp lỗi.
+
+**Mục tiêu kinh doanh:**
+
+- Hạn chế thời gian hệ thống ngừng hoạt động.
+- Không để lỗi thanh toán hoặc thông báo làm dừng toàn bộ dịch vụ đặt xe.
+- Đảm bảo dịch vụ hoạt động liên tục.
+
+---
+
+## BR14 – Hỗ trợ mở rộng và phát triển trong tương lai
+
+**Business Requirement:**
+
+> Hệ thống phải có khả năng mở rộng để doanh nghiệp có thể bổ sung dịch vụ, phương thức thanh toán, nhà cung cấp thông báo và các thành phần kỹ thuật mới.
+
+**Mục tiêu kinh doanh:**
+
+- Hỗ trợ chiến lược phát triển dài hạn.
+- Giảm chi phí khi mở rộng hệ thống.
+- Hạn chế việc phải xây dựng lại toàn bộ hệ thống.
+- Dễ dàng thích ứng với nhu cầu kinh doanh mới.
+
+---
+
+# 2. Business Requirement Map
+
+```mermaid
+flowchart TD
+    A[Business Goal<br/>Xây dựng nền tảng CAB lâu dài]
+    
+    A --> B1[BR01<br/>Tự động hóa đặt xe]
+    A --> B2[BR02<br/>Tự động tìm và phân công tài xế]
+    A --> B3[BR03<br/>Phục vụ quy mô lớn]
+    A --> B4[BR04<br/>Quản lý vòng đời chuyến đi]
+    A --> B5[BR05<br/>Theo dõi trạng thái và vị trí]
+    A --> B6[BR06<br/>Tính cước và thanh toán]
+    A --> B7[BR07<br/>Tích hợp dịch vụ bên ngoài]
+    A --> B8[BR08<br/>Thông báo]
+    A --> B9[BR09<br/>Quản lý vận hành]
+    A --> B10[BR10<br/>Phân quyền]
+    A --> B11[BR11<br/>Báo cáo]
+    A --> B12[BR12<br/>Bảo mật]
+    A --> B13[BR13<br/>Ổn định và sẵn sàng]
+    A --> B14[BR14<br/>Mở rộng tương lai]
+```
+
+# 3. Phân nhóm Business Requirements
+
+```mermaid
+mindmap
+    root((CAB System<br/>Business Requirements))
+        Customer Experience
+            BR01 Tự động hóa đặt xe
+            BR04 Quản lý chuyến đi
+            BR05 Theo dõi trạng thái
+            BR08 Thông báo
+
+        Operations
+            BR02 Tìm và phân công tài xế
+            BR09 Quản lý vận hành
+            BR11 Báo cáo
+
+        Revenue
+            BR06 Tính cước và thanh toán
+
+        Security
+            BR10 Phân quyền
+            BR12 Bảo mật
+
+        Technology
+            BR03 Phục vụ quy mô lớn
+            BR07 Tích hợp bên ngoài
+            BR13 Ổn định và sẵn sàng
+            BR14 Mở rộng tương lai
+```
+
+# 4. Bảng Business Requirements tổng hợp
+
+| ID | Business Requirement | Priority |
+|---|---|---|
+| **BR01** | Tự động hóa quy trình đặt xe | High |
+| **BR02** | Tự động tìm và phân công tài xế | **Critical** |
+| **BR03** | Phục vụ số lượng lớn khách hàng và tài xế | **Critical** |
+| **BR04** | Quản lý toàn bộ vòng đời chuyến đi | **Critical** |
+| **BR05** | Theo dõi trạng thái và vị trí chuyến đi | High |
+| **BR06** | Tính cước và thanh toán | **Critical** |
+| **BR07** | Tích hợp các dịch vụ bên ngoài | High |
+| **BR08** | Cung cấp hệ thống thông báo | High |
+| **BR09** | Quản lý vận hành tập trung | **Critical** |
+| **BR10** | Phân quyền quản trị | High |
+| **BR11** | Báo cáo quản trị | Medium |
+| **BR12** | Bảo mật dữ liệu | **Critical** |
+| **BR13** | Đảm bảo ổn định và sẵn sàng | **Critical** |
+| **BR14** | Khả năng mở rộng trong tương lai | High |s
