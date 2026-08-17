@@ -57,3 +57,32 @@ quadrantChart
 | **Payment Provider** | ⭐⭐⭐⭐ | Xử lý thanh toán điện tử |
 | **Map/GPS Provider** | ⭐⭐⭐⭐ | Hỗ trợ định vị và tìm tài xế |
 | **Notification Provider** | ⭐⭐⭐ | Hỗ trợ gửi thông báo |
+
+# Customer and System Expectations
+
+## 1. Customer Expectations
+
+- **Easy booking:** Khách hàng có thể đăng ký, đăng nhập, nhập điểm đón, điểm đến và chọn loại xe.
+- **Trip tracking:** Khách hàng có thể theo dõi trạng thái chuyến đi.
+- **Fast driver matching:** Hệ thống tìm tài xế phù hợp và gần khách hàng.
+- **Automatic re-matching:** Nếu tài xế từ chối hoặc không phản hồi, hệ thống tiếp tục tìm tài xế khác.
+- **Clear notification:** Khách hàng được thông báo khi có tài xế, tài xế đến, chuyến hoàn thành và thanh toán.
+- **Flexible payment:** Hỗ trợ thanh toán tiền mặt và thanh toán điện tử.
+- **Trip history:** Khách hàng có thể xem lịch sử chuyến đi và số tiền phải trả.
+- **Driver rating:** Khách hàng có thể đánh giá tài xế sau chuyến đi.
+- **Data security:** Thông tin cá nhân, vị trí và giao dịch được bảo vệ.
+
+## 2. System Expectations
+
+- **Scalability:** Phục vụ số lượng lớn khách hàng và tài xế.
+- **Automatic driver matching:** Tự động tìm và ưu tiên tài xế phù hợp.
+- **Trip management:** Quản lý toàn bộ trạng thái chuyến đi.
+- **Fare and payment management:** Tính cước và hỗ trợ nhiều phương thức thanh toán.
+- **Third-party integration:** Có khả năng tích hợp với các nhà cung cấp bên ngoài.
+- **Independent scalability:** Các thành phần có thể mở rộng độc lập.
+- **High availability:** Lỗi ở một thành phần không làm toàn bộ hệ thống ngừng hoạt động.
+- **Security:** Xác thực, phân quyền và bảo vệ dữ liệu.
+- **Audit logging:** Lưu vết các thao tác quan trọng.
+- **Administration:** Hỗ trợ nhân viên vận hành quản lý hệ thống.
+- **Reporting:** Cung cấp báo cáo về chuyến đi, doanh thu, tỷ lệ hoàn thành và hủy chuyến.
+- **Future extensibility:** Có thể thêm dịch vụ, phương thức thanh toán và nhà cung cấp mới.
