@@ -91,3 +91,71 @@ quadrantChart
 - **Administration:** Hỗ trợ nhân viên vận hành quản lý hệ thống.
 - **Reporting:** Cung cấp báo cáo về chuyến đi, doanh thu, tỷ lệ hoàn thành và hủy chuyến.
 - **Future extensibility:** Có thể thêm dịch vụ, phương thức thanh toán và nhà cung cấp mới.
+
+
+
+# CAB System – Mục đích nghiệp vụ và yêu cầu hệ thống
+
+## 1. Mục đích của nghiệp vụ
+
+Xây dựng hệ thống **CAB System** nhằm tự động hóa và quản lý toàn bộ quy trình đặt xe, từ khi khách hàng tạo yêu cầu đến khi chuyến đi hoàn thành, thanh toán và đánh giá.
+
+### Mục tiêu cụ thể
+
+- Tự động hóa việc tìm kiếm và phân công tài xế.
+- Giảm sự phụ thuộc vào việc phân công tài xế thủ công.
+- Giúp khách hàng đặt xe và theo dõi chuyến đi dễ dàng.
+- Quản lý tập trung khách hàng, tài xế, phương tiện, chuyến đi và giao dịch.
+- Hỗ trợ thanh toán bằng tiền mặt và phương thức điện tử.
+- Cung cấp thông báo kịp thời cho khách hàng và tài xế.
+- Hỗ trợ nhân viên vận hành quản lý và xử lý sự cố.
+- Cung cấp báo cáo về hoạt động kinh doanh.
+- Đảm bảo hệ thống bảo mật, ổn định và có khả năng mở rộng.
+- Cho phép bổ sung các tính năng mới trong tương lai.
+
+---
+
+# 2. Nghiệp vụ cần làm những gì?
+
+## 2.1. Quản lý khách hàng
+
+- Đăng ký tài khoản.
+- Đăng nhập.
+- Cập nhật thông tin cá nhân.
+- Xem lịch sử chuyến đi.
+- Xem số tiền phải trả.
+- Đánh giá tài xế sau khi hoàn thành chuyến.
+
+## 2.2. Đặt xe
+
+- Nhập điểm đón.
+- Nhập điểm đến.
+- Lựa chọn loại xe/dịch vụ.
+- Gửi yêu cầu đặt xe.
+- Theo dõi trạng thái yêu cầu đặt xe.
+
+## 2.3. Tìm và phân công tài xế
+
+- Xác định các tài xế phù hợp.
+- Kiểm tra vị trí của tài xế.
+- Kiểm tra trạng thái sẵn sàng của tài xế.
+- Áp dụng các tiêu chí vận hành.
+- Ưu tiên tài xế phù hợp và gần khách hàng.
+- Gửi yêu cầu chuyến đi cho tài xế.
+- Nếu tài xế không phản hồi hoặc từ chối, tiếp tục tìm tài xế khác.
+- Nếu không tìm được tài xế, thông báo cho khách hàng.
+
+## 2.4. Thực hiện chuyến đi
+
+Tài xế cập nhật trạng thái chuyến:
+
+```text
+Đã nhận chuyến
+      ↓
+Đã đến điểm đón
+      ↓
+Đã đón khách
+      ↓
+Đang di chuyển
+      ↓
+Hoàn thành chuyến
