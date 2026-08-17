@@ -1699,3 +1699,454 @@ flowchart TB
 | 🟡 **P2** | Lịch sử chuyến | Có thể hoàn thiện sau chức năng lõi |
 | 🟡 **P2** | Đánh giá tài xế | Không ảnh hưởng đến việc hoàn thành chuyến |
 | 🟡 **P2** | Báo cáo nâng cao | Có thể phát triển sau MVP |
+
+
+# CAB System – Đặc tả Use Case và Phân tích quy trình nghiệp vụ
+
+# I. ĐẶC TẢ USE CASE
+
+## UC01 – Đăng ký tài khoản
+
+| Thuộc tính | Nội dung |
+|---|---|
+| **Use Case ID** | UC01 |
+| **Tên Use Case** | Đăng ký tài khoản |
+| **Actor chính** | Customer / Driver |
+| **Mục tiêu** | Tạo tài khoản để sử dụng hệ thống |
+| **Điều kiện trước** | Người dùng chưa có tài khoản |
+| **Điều kiện sau** | Tài khoản được tạo thành công |
+| **Trigger** | Người dùng chọn chức năng đăng ký |
+
+### Main Flow
+
+1. Người dùng chọn **Đăng ký**.
+2. Hệ thống hiển thị biểu mẫu đăng ký.
+3. Người dùng nhập thông tin cần thiết.
+4. Hệ thống kiểm tra thông tin.
+5. Hệ thống kiểm tra tài khoản đã tồn tại hay chưa.
+6. Hệ thống tạo tài khoản.
+7. Hệ thống thông báo đăng ký thành công.
+
+### Alternative Flow
+
+- **A1:** Thông tin không hợp lệ → Hệ thống yêu cầu nhập lại.
+- **A2:** Tài khoản đã tồn tại → Hệ thống thông báo và yêu cầu sử dụng thông tin khác.
+
+---
+
+# UC02 – Đăng nhập
+
+| Thuộc tính | Nội dung |
+|---|---|
+| **Use Case ID** | UC02 |
+| **Tên Use Case** | Đăng nhập |
+| **Actor chính** | Customer / Driver / Operations Staff |
+| **Mục tiêu** | Xác thực người dùng |
+| **Điều kiện trước** | Người dùng đã có tài khoản |
+| **Điều kiện sau** | Người dùng đăng nhập thành công |
+| **Trigger** | Người dùng chọn Đăng nhập |
+
+### Main Flow
+
+1. Người dùng nhập thông tin đăng nhập.
+2. Hệ thống kiểm tra thông tin.
+3. Hệ thống xác thực tài khoản.
+4. Hệ thống xác định quyền của người dùng.
+5. Hệ thống cho phép truy cập chức năng tương ứng.
+
+### Alternative Flow
+
+- **A1:** Sai thông tin đăng nhập → Thông báo lỗi.
+- **A2:** Tài khoản không hoạt động → Từ chối đăng nhập.
+
+---
+
+# UC03 – Đặt xe
+
+| Thuộc tính | Nội dung |
+|---|---|
+| **Use Case ID** | UC03 |
+| **Tên Use Case** | Đặt xe |
+| **Actor chính** | Customer |
+| **Mục tiêu** | Tạo yêu cầu chuyến đi |
+| **Điều kiện trước** | Customer đã đăng nhập |
+| **Điều kiện sau** | Yêu cầu đặt xe được tạo |
+| **Trigger** | Customer muốn sử dụng dịch vụ |
+
+### Main Flow
+
+1. Customer chọn **Đặt xe**.
+2. Hệ thống yêu cầu nhập điểm đón.
+3. Customer nhập điểm đón.
+4. Customer nhập điểm đến.
+5. Customer chọn loại xe.
+6. Hệ thống kiểm tra thông tin chuyến.
+7. Customer xác nhận đặt xe.
+8. Hệ thống tạo yêu cầu đặt xe.
+9. Hệ thống chuyển yêu cầu sang trạng thái **Đang tìm tài xế**.
+10. Hệ thống bắt đầu tìm tài xế phù hợp.
+11. Hệ thống thông báo yêu cầu đã được tiếp nhận.
+
+### Alternative Flow
+
+- **A1:** Thiếu điểm đón/điểm đến → Yêu cầu nhập đầy đủ.
+- **A2:** Không có tài xế phù hợp → Thông báo cho Customer.
+- **A3:** Customer hủy yêu cầu → Hệ thống xử lý theo chính sách hủy.
+
+---
+
+# UC04 – Tìm và phân công tài xế
+
+| Thuộc tính | Nội dung |
+|---|---|
+| **Use Case ID** | UC04 |
+| **Tên Use Case** | Tìm và phân công tài xế |
+| **Actor chính** | System |
+| **Actor phụ** | Driver |
+| **Mục tiêu** | Tìm được tài xế phù hợp cho chuyến |
+| **Điều kiện trước** | Có yêu cầu đặt xe |
+| **Điều kiện sau** | Một tài xế được phân công hoặc hệ thống thông báo không tìm được tài xế |
+| **Trigger** | Customer tạo yêu cầu đặt xe |
+
+### Main Flow
+
+1. Hệ thống nhận yêu cầu đặt xe.
+2. Hệ thống xác định các tài xế phù hợp.
+3. Hệ thống kiểm tra trạng thái sẵn sàng của tài xế.
+4. Hệ thống kiểm tra vị trí tài xế.
+5. Hệ thống áp dụng tiêu chí ưu tiên.
+6. Hệ thống chọn tài xế phù hợp.
+7. Hệ thống gửi yêu cầu chuyến cho tài xế.
+8. Tài xế nhận chuyến.
+9. Hệ thống phân công tài xế.
+10. Hệ thống thông báo cho Customer.
+11. Chuyến chuyển sang trạng thái **Đã phân công**.
+
+### Alternative Flow
+
+- **A1:** Tài xế từ chối → Hệ thống tìm tài xế tiếp theo.
+- **A2:** Tài xế không phản hồi → Hệ thống tìm tài xế tiếp theo.
+- **A3:** Không còn tài xế phù hợp → Hệ thống thông báo Customer.
+
+---
+
+# UC05 – Thực hiện chuyến đi
+
+| Thuộc tính | Nội dung |
+|---|---|
+| **Use Case ID** | UC05 |
+| **Tên Use Case** | Thực hiện chuyến đi |
+| **Actor chính** | Driver |
+| **Actor phụ** | Customer |
+| **Mục tiêu** | Hoàn thành chuyến đi |
+| **Điều kiện trước** | Driver đã nhận chuyến |
+| **Điều kiện sau** | Chuyến đi hoàn thành |
+| **Trigger** | Driver nhận chuyến |
+
+### Main Flow
+
+1. Driver nhận chuyến.
+2. Driver di chuyển đến điểm đón.
+3. Driver cập nhật **Đã đến điểm đón**.
+4. Hệ thống cập nhật trạng thái chuyến.
+5. Customer nhận thông báo.
+6. Driver đón Customer.
+7. Driver cập nhật **Đã đón khách**.
+8. Driver bắt đầu di chuyển.
+9. Driver cập nhật **Đang di chuyển**.
+10. Customer theo dõi trạng thái chuyến.
+11. Driver đến điểm đến.
+12. Driver cập nhật **Hoàn thành chuyến**.
+13. Hệ thống chuyển chuyến sang trạng thái hoàn thành.
+
+### Alternative Flow
+
+- **A1:** Chuyến gặp sự cố → Nhân viên vận hành hỗ trợ xử lý.
+- **A2:** Customer/Driver yêu cầu hủy → Xử lý theo chính sách hủy.
+
+---
+
+# UC06 – Tính cước
+
+| Thuộc tính | Nội dung |
+|---|---|
+| **Use Case ID** | UC06 |
+| **Tên Use Case** | Tính cước |
+| **Actor chính** | System |
+| **Mục tiêu** | Xác định số tiền Customer phải trả |
+| **Điều kiện trước** | Chuyến đã hoàn thành |
+| **Điều kiện sau** | Số tiền phải trả được xác định |
+| **Trigger** | Chuyến chuyển sang trạng thái hoàn thành |
+
+### Main Flow
+
+1. Hệ thống nhận thông tin chuyến hoàn thành.
+2. Hệ thống xác định loại dịch vụ.
+3. Hệ thống lấy thông tin chuyến đi.
+4. Hệ thống áp dụng quy tắc tính cước.
+5. Hệ thống xác định số tiền phải trả.
+6. Hệ thống lưu thông tin cước.
+7. Hệ thống hiển thị số tiền cho Customer.
+
+### Business Rule
+
+> Cách tính cước cụ thể chưa được doanh nghiệp chốt và cần BA xác nhận trước khi phát triển.
+
+---
+
+# UC07 – Thanh toán
+
+| Thuộc tính | Nội dung |
+|---|---|
+| **Use Case ID** | UC07 |
+| **Tên Use Case** | Thanh toán |
+| **Actor chính** | Customer |
+| **Actor phụ** | Payment Provider |
+| **Mục tiêu** | Hoàn tất thanh toán chuyến đi |
+| **Điều kiện trước** | Chuyến hoàn thành và đã có số tiền phải trả |
+| **Điều kiện sau** | Giao dịch được ghi nhận thành công hoặc thất bại |
+| **Trigger** | Customer thực hiện thanh toán |
+
+### Main Flow
+
+1. Hệ thống hiển thị số tiền phải trả.
+2. Customer lựa chọn phương thức thanh toán.
+3. Nếu tiền mặt, hệ thống ghi nhận thanh toán tiền mặt.
+4. Nếu thanh toán điện tử, hệ thống gửi yêu cầu đến Payment Provider.
+5. Payment Provider xử lý giao dịch.
+6. Payment Provider trả kết quả.
+7. Hệ thống cập nhật trạng thái thanh toán.
+8. Hệ thống thông báo kết quả cho Customer.
+
+### Alternative Flow
+
+- **A1:** Thanh toán điện tử thất bại → Hệ thống thông báo lỗi.
+- **A2:** Customer thực hiện lại thanh toán → Hệ thống gửi lại yêu cầu.
+- **A3:** Payment Provider không phản hồi → Hệ thống ghi nhận trạng thái phù hợp và xử lý theo chính sách doanh nghiệp.
+
+---
+
+# UC08 – Theo dõi chuyến đi
+
+| Thuộc tính | Nội dung |
+|---|---|
+| **Use Case ID** | UC08 |
+| **Tên Use Case** | Theo dõi chuyến đi |
+| **Actor chính** | Customer |
+| **Actor phụ** | Operations Staff |
+| **Mục tiêu** | Theo dõi trạng thái chuyến và tài xế |
+| **Điều kiện trước** | Customer có chuyến đang hoạt động |
+| **Điều kiện sau** | Thông tin trạng thái được hiển thị |
+
+### Main Flow
+
+1. Customer mở chuyến đang thực hiện.
+2. Hệ thống hiển thị trạng thái chuyến.
+3. Hệ thống hiển thị thông tin tài xế.
+4. Hệ thống hiển thị thời gian dự kiến tài xế đến.
+5. Hệ thống cập nhật trạng thái khi có thay đổi.
+
+---
+
+# UC09 – Quản lý vận hành
+
+| Thuộc tính | Nội dung |
+|---|---|
+| **Use Case ID** | UC09 |
+| **Tên Use Case** | Quản lý vận hành |
+| **Actor chính** | Operations Staff |
+| **Mục tiêu** | Giám sát và hỗ trợ hoạt động đặt xe |
+| **Điều kiện trước** | Nhân viên đã đăng nhập và có quyền |
+| **Điều kiện sau** | Dữ liệu được tra cứu hoặc vấn đề được xử lý |
+
+### Main Flow
+
+1. Nhân viên đăng nhập.
+2. Hệ thống kiểm tra quyền.
+3. Nhân viên xem các chuyến đang diễn ra.
+4. Nhân viên kiểm tra trạng thái tài xế.
+5. Nhân viên tra cứu khách hàng/tài xế/phương tiện.
+6. Nhân viên kiểm tra giao dịch.
+7. Khi có sự cố, nhân viên thực hiện xử lý.
+8. Hệ thống lưu lại thao tác quan trọng.
+
+---
+
+# II. PHÂN TÍCH QUY TRÌNH NGHIỆP VỤ
+
+## 1. Quy trình nghiệp vụ hiện tại – AS-IS
+
+Theo đề bài, hệ thống hiện tại còn phụ thuộc nhiều vào tổng đài và phân công tài xế thủ công.
+
+```mermaid
+flowchart TD
+    A[Khách hàng cần đặt xe]
+    B[Liên hệ tổng đài / ứng dụng đơn giản]
+    C[Nhân viên tiếp nhận yêu cầu]
+    D[Nhân viên tìm tài xế]
+    E[Phân công tài xế thủ công]
+    F[Tài xế thực hiện chuyến]
+    G[Khách hàng thanh toán]
+    H[Thông tin giao dịch được xử lý]
+    
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    G --> H
+```
+
+### Vấn đề của AS-IS
+
+| Vấn đề | Ảnh hưởng |
+|---|---|
+| Phân công tài xế thủ công | Tốn thời gian |
+| Khó theo dõi trạng thái chuyến | Khách hàng thiếu thông tin |
+| Thanh toán chưa tập trung | Khó quản lý giao dịch |
+| Khó mở rộng | Không đáp ứng tốt khi số lượng người dùng tăng |
+| Phụ thuộc vào nhân viên vận hành | Tăng chi phí vận hành |
+| Khó xử lý khi tài xế từ chối | Làm chậm quá trình đặt xe |
+
+---
+
+# 2. Quy trình nghiệp vụ đề xuất – TO-BE
+
+```mermaid
+flowchart TD
+
+    A[Customer]
+    B[Tạo yêu cầu đặt xe]
+    C[Hệ thống tiếp nhận]
+    D[Tìm tài xế phù hợp]
+    E{Có tài xế?}
+    F[Gửi yêu cầu cho Driver]
+    G{Driver nhận?}
+    H[Phân công tài xế]
+    I[Driver đến điểm đón]
+    J[Đón khách]
+    K[Đang di chuyển]
+    L[Hoàn thành chuyến]
+    M[Tính cước]
+    N[Thanh toán]
+    O[Thông báo kết quả]
+    P[Đánh giá]
+    Q[Lưu lịch sử]
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+
+    E -- Không --> R[Thông báo không tìm được tài xế]
+    E -- Có --> F
+
+    F --> G
+    G -- Không --> D
+    G -- Có --> H
+
+    H --> I
+    I --> J
+    J --> K
+    K --> L
+
+    L --> M
+    M --> N
+    N --> O
+    O --> P
+    P --> Q
+```
+
+---
+
+# 3. So sánh AS-IS và TO-BE
+
+| AS-IS | TO-BE |
+|---|---|
+| Khách hàng gọi tổng đài | Khách hàng đặt xe trực tuyến |
+| Nhân viên tìm tài xế thủ công | Hệ thống tự động tìm tài xế |
+| Khó biết trạng thái chuyến | Theo dõi trạng thái chuyến |
+| Phân công thủ công | Tự động phân công |
+| Khó xử lý khi tài xế từ chối | Tự động tìm tài xế tiếp theo |
+| Thanh toán chưa tập trung | Quản lý thanh toán tập trung |
+| Thông báo hạn chế | Thông báo tự động |
+| Khó mở rộng | Kiến trúc có khả năng mở rộng |
+| Quản lý dữ liệu phân tán | Quản lý tập trung |
+| Báo cáo hạn chế | Báo cáo hoạt động |
+
+---
+
+# 4. Business Process chính của CAB System
+
+```mermaid
+flowchart LR
+
+    A[Đặt xe]
+    B[Tìm tài xế]
+    C[Phân công]
+    D[Thực hiện chuyến]
+    E[Tính cước]
+    F[Thanh toán]
+    G[Thông báo]
+    H[Đánh giá]
+    I[Lưu lịch sử]
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    G --> H
+    H --> I
+```
+
+---
+
+# 5. Các điểm quyết định quan trọng trong quy trình
+
+```mermaid
+flowchart TD
+
+    A[Tạo yêu cầu] --> B{Có tài xế phù hợp?}
+
+    B -- Có --> C[Gửi yêu cầu]
+    B -- Không --> D[Thông báo khách hàng]
+
+    C --> E{Tài xế nhận?}
+
+    E -- Có --> F[Thực hiện chuyến]
+    E -- Không --> G[Tìm tài xế khác]
+
+    G --> B
+
+    F --> H[Hoàn thành chuyến]
+    H --> I{Thanh toán thành công?}
+
+    I -- Có --> J[Hoàn tất]
+    I -- Không --> K[Thông báo thất bại]
+    K --> L[Xử lý lại]
+    L --> I
+```
+
+---
+
+# 6. Các vấn đề nghiệp vụ cần BA làm rõ
+
+Đề bài đã chỉ rõ một số Business Rules **chưa được chốt**.
+
+| STT | Vấn đề cần xác nhận |
+|---|---|
+| 1 | Cách tính cước cụ thể |
+| 2 | Tiêu chí ưu tiên tài xế |
+| 3 | Khoảng cách tối đa để tìm tài xế |
+| 4 | Thời gian tài xế phải phản hồi |
+| 5 | Số lần thử tìm tài xế |
+| 6 | Chính sách hủy chuyến |
+| 7 | Phí hủy chuyến |
+| 8 | Cách xử lý khi mất kết nối mạng |
+| 9 | Cách xử lý giao dịch thanh toán không rõ trạng thái |
+| 10 | Thời gian lưu trữ dữ liệu |
+| 11 | Quyền hạn cụ thể của từng loại nhân viên |
+| 12 | Kênh thông báo được sử dụng trong MVP |
