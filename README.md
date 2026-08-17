@@ -159,3 +159,268 @@ Tài xế cập nhật trạng thái chuyến:
 Đang di chuyển
       ↓
 Hoàn thành chuyến
+
+
+
+# CAB System – Business Process
+
+## 1. Mục đích nghiệp vụ
+
+Mục đích của CAB System là tự động hóa và quản lý toàn bộ quy trình đặt xe:
+
+- Khách hàng tạo yêu cầu đặt xe.
+- Hệ thống tìm và phân công tài xế.
+- Tài xế thực hiện chuyến đi.
+- Hệ thống tính cước và thanh toán.
+- Hệ thống gửi thông báo.
+- Khách hàng đánh giá tài xế.
+- Doanh nghiệp quản lý và báo cáo hoạt động.
+
+---
+
+## 2. Quy trình nghiệp vụ chính
+
+```mermaid
+flowchart TD
+    A[Khách hàng] --> B[Đăng nhập hệ thống]
+    B --> C[Nhập điểm đón và điểm đến]
+    C --> D[Chọn loại xe]
+    D --> E[Gửi yêu cầu đặt xe]
+    E --> F[Hệ thống tiếp nhận yêu cầu]
+    
+    F --> G[Tìm tài xế phù hợp]
+    G --> H{Có tài xế phù hợp?}
+    
+    H -- Không --> I[Thông báo không tìm được tài xế]
+    H -- Có --> J[Gửi yêu cầu cho tài xế]
+    
+    J --> K{Tài xế nhận chuyến?}
+    K -- Không --> G
+    K -- Có --> L[Thông báo tài xế đã nhận chuyến]
+    
+    L --> M[Tài xế đến điểm đón]
+    M --> N[Thông báo tài xế đã đến]
+    N --> O[Tài xế đón khách]
+    O --> P[Đang di chuyển]
+    P --> Q[Hoàn thành chuyến]
+    
+    Q --> R[Tính cước]
+    R --> S[Thanh toán]
+    S --> T{Thanh toán thành công?}
+    
+    T -- Không --> U[Thông báo thanh toán thất bại]
+    U --> V[Xử lý thanh toán lại]
+    V --> S
+    
+    T -- Có --> W[Thông báo thanh toán thành công]
+    W --> X[Khách hàng đánh giá tài xế]
+    X --> Y[Lưu lịch sử chuyến đi]
+```
+
+---
+
+# 3. Quy trình tìm và phân công tài xế
+
+```mermaid
+flowchart TD
+    A[Yêu cầu đặt xe] --> B[Xác định tài xế phù hợp]
+    B --> C[Kiểm tra vị trí]
+    C --> D[Kiểm tra trạng thái sẵn sàng]
+    D --> E[Kiểm tra tiêu chí vận hành]
+    E --> F[Ưu tiên tài xế gần và phù hợp]
+    F --> G[Gửi yêu cầu chuyến]
+    
+    G --> H{Tài xế phản hồi?}
+    
+    H -- Nhận --> I[Phân công tài xế]
+    H -- Từ chối --> J[Tìm tài xế tiếp theo]
+    H -- Không phản hồi --> J
+    
+    J --> K{Còn tài xế phù hợp?}
+    K -- Có --> G
+    K -- Không --> L[Thông báo không tìm được tài xế]
+```
+
+---
+
+# 4. Quy trình thực hiện chuyến đi
+
+```mermaid
+stateDiagram-v2
+    [*] --> Requested: Khách hàng đặt xe
+    Requested --> Searching: Tìm tài xế
+    Searching --> DriverAssigned: Tài xế nhận chuyến
+    Searching --> Searching: Tài xế từ chối / không phản hồi
+    Searching --> Cancelled: Không tìm được tài xế
+
+    DriverAssigned --> DriverArriving: Tài xế di chuyển đến điểm đón
+    DriverArriving --> Arrived: Tài xế đã đến
+    Arrived --> PassengerPickedUp: Đã đón khách
+    PassengerPickedUp --> InProgress: Đang di chuyển
+    InProgress --> Completed: Hoàn thành chuyến
+    Completed --> Payment: Tính cước và thanh toán
+    Payment --> Finished: Thanh toán hoàn tất
+    Finished --> [*]
+
+    Cancelled --> [*]
+```
+
+---
+
+# 5. Các nhóm chức năng hệ thống
+
+```mermaid
+mindmap
+  root((CAB System))
+    Customer Management
+      Đăng ký
+      Đăng nhập
+      Cập nhật thông tin
+      Lịch sử chuyến đi
+      Đánh giá tài xế
+
+    Booking Management
+      Nhập điểm đón
+      Nhập điểm đến
+      Chọn loại xe
+      Tạo yêu cầu đặt xe
+      Theo dõi chuyến đi
+
+    Driver Management
+      Đăng ký tài xế
+      Hồ sơ tài xế
+      Thông tin phương tiện
+      Trạng thái hoạt động
+      Vị trí tài xế
+
+    Driver Matching
+      Tìm tài xế
+      Kiểm tra vị trí
+      Kiểm tra trạng thái
+      Ưu tiên tài xế gần
+      Xử lý từ chối
+      Tìm tài xế tiếp theo
+
+    Trip Management
+      Nhận chuyến
+      Đến điểm đón
+      Đón khách
+      Đang di chuyển
+      Hoàn thành chuyến
+
+    Payment
+      Tính cước
+      Tiền mặt
+      Thanh toán điện tử
+      Xử lý thanh toán thất bại
+
+    Notification
+      Thông báo khách hàng
+      Thông báo tài xế
+      Thông báo trạng thái chuyến
+      Thông báo thanh toán
+
+    Operations
+      Quản lý khách hàng
+      Quản lý tài xế
+      Quản lý phương tiện
+      Theo dõi chuyến
+      Xử lý sự cố
+      Tra cứu giao dịch
+
+    Reporting
+      Số lượng chuyến
+      Doanh thu
+      Tỷ lệ hoàn thành
+      Tỷ lệ hủy
+      Hiệu quả tài xế
+```
+
+---
+
+# 6. Hệ thống cần đáp ứng
+
+```mermaid
+flowchart LR
+    A((CAB System))
+
+    A --> B[Functional Requirements]
+    A --> C[Non-functional Requirements]
+
+    B --> B1[Account Management]
+    B --> B2[Booking Management]
+    B --> B3[Driver Matching]
+    B --> B4[Trip Management]
+    B --> B5[Payment]
+    B --> B6[Notification]
+    B --> B7[Rating]
+    B --> B8[Administration]
+    B --> B9[Reporting]
+
+    C --> C1[Scalability]
+    C --> C2[Availability]
+    C --> C3[Security]
+    C --> C4[Performance]
+    C --> C5[Maintainability]
+    C --> C6[Extensibility]
+    C --> C7[Auditability]
+```
+
+---
+
+# 7. Mối quan hệ giữa nghiệp vụ và hệ thống
+
+```mermaid
+flowchart TD
+    A[Business Objectives] --> B[Business Processes]
+    
+    B --> B1[Đặt xe]
+    B --> B2[Tìm tài xế]
+    B --> B3[Thực hiện chuyến]
+    B --> B4[Tính cước]
+    B --> B5[Thanh toán]
+    B --> B6[Thông báo]
+    B --> B7[Đánh giá]
+    B --> B8[Quản lý vận hành]
+    B --> B9[Báo cáo]
+
+    B1 --> C[System Functions]
+    B2 --> C
+    B3 --> C
+    B4 --> C
+    B5 --> C
+    B6 --> C
+    B7 --> C
+    B8 --> C
+    B9 --> C
+
+    C --> D[Scalability]
+    C --> E[Security]
+    C --> F[Availability]
+    C --> G[Performance]
+    C --> H[Extensibility]
+```
+
+## 8. Tóm tắt
+
+```mermaid
+flowchart LR
+    A[Khách hàng] --> B[Đặt xe]
+    B --> C[Tìm tài xế]
+    C --> D[Phân công]
+    D --> E[Thực hiện chuyến]
+    E --> F[Tính cước]
+    F --> G[Thanh toán]
+    G --> H[Đánh giá]
+    H --> I[Lịch sử]
+
+    J[Nhân viên vận hành] --> K[Quản lý hệ thống]
+    K --> B
+    K --> C
+    K --> E
+    K --> G
+    K --> I
+
+    L[Ban giám đốc] --> M[Báo cáo]
+    M --> K
+```
