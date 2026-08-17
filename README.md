@@ -2150,3 +2150,275 @@ flowchart TD
 | 10 | Thời gian lưu trữ dữ liệu |
 | 11 | Quyền hạn cụ thể của từng loại nhân viên |
 | 12 | Kênh thông báo được sử dụng trong MVP |
+
+
+# BUSINESS RULES – CAB SYSTEM
+
+## 1. Khái niệm
+
+**Business Rule** là các quy tắc, điều kiện hoặc ràng buộc mà doanh nghiệp yêu cầu hệ thống phải tuân thủ trong quá trình xử lý nghiệp vụ.
+
+> Business Rule không phải là chức năng của hệ thống.  
+> Business Rule xác định **hệ thống phải xử lý như thế nào và trong điều kiện nào**.
+
+---
+
+# 2. Business Rules chính
+
+| ID | Business Rule | Mô tả | Trạng thái |
+|---|---|---|---|
+| **BR-01** | Xác thực người dùng | Khách hàng và tài xế phải được xác thực trước khi sử dụng các chức năng yêu cầu tài khoản. | Đã xác định |
+| **BR-02** | Phân quyền | Các chức năng quản trị phải được kiểm soát theo quyền của người dùng. | Đã xác định |
+| **BR-03** | Tài xế sẵn sàng | Chỉ tài xế đang ở trạng thái sẵn sàng mới được xem xét để nhận chuyến. | Đã xác định |
+| **BR-04** | Tài xế phù hợp | Tài xế được lựa chọn phải phù hợp với vị trí, trạng thái và các tiêu chí vận hành. | Đã xác định |
+| **BR-05** | Ưu tiên tài xế | Hệ thống phải ưu tiên tài xế phù hợp và gần khách hàng. | Đã xác định |
+| **BR-06** | Tài xế từ chối | Nếu tài xế từ chối chuyến, hệ thống phải tiếp tục tìm tài xế khác. | Đã xác định |
+| **BR-07** | Tài xế không phản hồi | Nếu tài xế không phản hồi, hệ thống phải có cơ chế chuyển sang tài xế khác. | Đã xác định |
+| **BR-08** | Không tìm được tài xế | Nếu không tìm được tài xế phù hợp, hệ thống phải thông báo rõ ràng cho khách hàng. | Đã xác định |
+| **BR-09** | Trạng thái chuyến | Chuyến đi phải được cập nhật trạng thái trong quá trình thực hiện. | Đã xác định |
+| **BR-10** | Thứ tự trạng thái | Chuyến đi phải được quản lý theo các trạng thái phù hợp với quy trình nghiệp vụ. | Đã xác định |
+| **BR-11** | Tính cước | Số tiền khách hàng phải trả được xác định dựa trên loại dịch vụ và thông tin chuyến đi. | Đã xác định |
+| **BR-12** | Thanh toán | Hệ thống phải hỗ trợ thanh toán bằng tiền mặt và phương thức điện tử. | Đã xác định |
+| **BR-13** | Dữ liệu thanh toán | CAB System không được lưu trực tiếp thông tin nhạy cảm của thẻ hoặc tài khoản thanh toán. | Đã xác định |
+| **BR-14** | Thanh toán thất bại | Khi thanh toán điện tử thất bại, hệ thống phải thông báo cho khách hàng và hỗ trợ xử lý lại theo chính sách doanh nghiệp. | Đã xác định |
+| **BR-15** | Thông báo | Các sự kiện quan trọng của chuyến đi và thanh toán phải được thông báo cho đối tượng liên quan. | Đã xác định |
+| **BR-16** | Đánh giá | Khách hàng chỉ có thể đánh giá tài xế sau khi chuyến đi hoàn thành. | Đã xác định |
+| **BR-17** | Quản lý vị trí | Hệ thống được phép sử dụng dữ liệu vị trí tài xế để hỗ trợ tìm tài xế và dự kiến thời gian đến. | Đã xác định |
+| **BR-18** | Bảo vệ dữ liệu | Thông tin cá nhân, phương tiện, vị trí và giao dịch phải được bảo vệ. | Đã xác định |
+| **BR-19** | Audit Log | Các thao tác quản trị quan trọng phải được lưu vết để phục vụ kiểm tra. | Đã xác định |
+| **BR-20** | Phân tách lỗi | Lỗi ở thanh toán hoặc thông báo không được làm toàn bộ hệ thống đặt xe ngừng hoạt động. | Đã xác định |
+
+---
+
+# 3. Business Rules chưa được xác định
+
+Theo đề bài, doanh nghiệp **chưa chốt một số quy tắc nghiệp vụ**. BA cần xác nhận với các bên liên quan trước khi phát triển.
+
+| ID | Business Rule cần xác nhận | Câu hỏi cần làm rõ |
+|---|---|---|
+| **BR-21** | Cách tính cước | Cước được tính theo quãng đường, thời gian, loại xe hay kết hợp? |
+| **BR-22** | Tiêu chí ưu tiên tài xế | Ưu tiên khoảng cách, thời gian chờ, đánh giá hay tiêu chí khác? |
+| **BR-23** | Thời gian phản hồi | Tài xế có bao nhiêu giây/phút để nhận hoặc từ chối chuyến? |
+| **BR-24** | Số lần tìm tài xế | Hệ thống sẽ thử tìm tối đa bao nhiêu tài xế? |
+| **BR-25** | Phạm vi tìm kiếm | Hệ thống tìm tài xế trong bán kính bao nhiêu km? |
+| **BR-26** | Chính sách hủy chuyến | Khi nào khách hàng/tài xế được phép hủy chuyến? |
+| **BR-27** | Phí hủy | Có áp dụng phí hủy chuyến hay không? Nếu có thì tính như thế nào? |
+| **BR-28** | Mất kết nối | Hệ thống xử lý như thế nào khi khách hàng hoặc tài xế mất mạng? |
+| **BR-29** | Thanh toán không xác định | Xử lý thế nào khi Payment Provider không trả kết quả rõ ràng? |
+| **BR-30** | Lưu trữ dữ liệu | Dữ liệu khách hàng, chuyến đi và giao dịch được lưu trong bao lâu? |
+
+---
+
+# 4. Business Rule – Quy trình tìm tài xế
+
+```mermaid
+flowchart TD
+    A[Yêu cầu đặt xe] --> B[Kiểm tra tài xế phù hợp]
+
+    B --> C{Tài xế sẵn sàng?}
+
+    C -- Không --> D[Bỏ qua tài xế]
+    C -- Có --> E[Kiểm tra vị trí]
+
+    E --> F[Áp dụng tiêu chí ưu tiên]
+    F --> G[Chọn tài xế phù hợp nhất]
+
+    G --> H[Gửi yêu cầu chuyến]
+
+    H --> I{Tài xế phản hồi?}
+
+    I -- Nhận --> J[Phân công tài xế]
+    I -- Từ chối --> K[Tìm tài xế khác]
+    I -- Không phản hồi --> K
+
+    K --> L{Còn tài xế phù hợp?}
+
+    L -- Có --> B
+    L -- Không --> M[Thông báo khách hàng]
+```
+
+### Quy tắc
+
+```text
+IF tài xế không ở trạng thái Sẵn sàng
+THEN không đưa tài xế vào danh sách phân công.
+
+IF tài xế từ chối chuyến
+THEN hệ thống tiếp tục tìm tài xế khác.
+
+IF tài xế không phản hồi trong thời gian quy định
+THEN hệ thống tiếp tục tìm tài xế khác.
+
+IF không còn tài xế phù hợp
+THEN thông báo cho khách hàng.
+```
+
+> **Lưu ý:** “thời gian quy định” cần được doanh nghiệp xác nhận trước khi triển khai.
+
+---
+
+# 5. Business Rule – Trạng thái chuyến
+
+```mermaid
+stateDiagram-v2
+
+    [*] --> Searching: Tạo yêu cầu
+
+    Searching --> Assigned: Tài xế nhận
+    Searching --> Searching: Từ chối / Không phản hồi
+    Searching --> NoDriver: Không tìm được tài xế
+
+    Assigned --> Arriving: Tài xế di chuyển
+    Arriving --> Arrived: Đến điểm đón
+    Arrived --> PickedUp: Đón khách
+    PickedUp --> InProgress: Bắt đầu di chuyển
+    InProgress --> Completed: Hoàn thành
+
+    Completed --> Payment: Tính cước
+    Payment --> Finished: Thanh toán hoàn tất
+
+    NoDriver --> [*]
+    Finished --> [*]
+```
+
+### Quy tắc
+
+```text
+Searching
+→ Chỉ chuyển sang Assigned khi tài xế chấp nhận chuyến.
+
+Assigned
+→ Tài xế phải cập nhật quá trình thực hiện chuyến.
+
+Arriving
+→ Tài xế đang di chuyển đến điểm đón.
+
+Arrived
+→ Tài xế đã đến điểm đón.
+
+PickedUp
+→ Khách hàng đã được đón.
+
+InProgress
+→ Chuyến đang được thực hiện.
+
+Completed
+→ Chuyến hoàn thành và được chuyển sang bước tính cước.
+
+Completed
+→ Không được quay lại trạng thái đang thực hiện.
+```
+
+---
+
+# 6. Business Rule – Thanh toán
+
+```mermaid
+flowchart TD
+
+    A[Chuyến hoàn thành]
+    B[Tính cước]
+    C[Chọn phương thức thanh toán]
+
+    D[Tiền mặt]
+    E[Thanh toán điện tử]
+
+    F[Payment Provider]
+    G{Kết quả}
+
+    H[Thanh toán thành công]
+    I[Thanh toán thất bại]
+    J[Xử lý lại theo chính sách]
+
+    A --> B
+    B --> C
+
+    C --> D
+    C --> E
+
+    E --> F
+    F --> G
+
+    G --> H
+    G --> I
+
+    I --> J
+    J --> E
+```
+
+### Quy tắc
+
+```text
+IF chuyến chưa hoàn thành
+THEN chưa thực hiện bước thanh toán cuối chuyến.
+
+IF phương thức = Tiền mặt
+THEN ghi nhận thanh toán tiền mặt.
+
+IF phương thức = Điện tử
+THEN giao dịch được xử lý thông qua Payment Provider.
+
+IF thanh toán điện tử thất bại
+THEN thông báo khách hàng.
+
+IF doanh nghiệp cho phép thanh toán lại
+THEN khách hàng có thể thực hiện lại giao dịch.
+
+CAB System
+→ Không lưu trực tiếp thông tin nhạy cảm của thẻ/tài khoản thanh toán.
+```
+
+---
+
+# 7. Business Rules – Kết luận
+
+Các Business Rules của CAB System được chia thành 4 nhóm chính:
+
+```mermaid
+mindmap
+    root((Business Rules))
+        Booking
+            Tài xế phù hợp
+            Tài xế sẵn sàng
+            Ưu tiên tài xế
+            Tìm tài xế tiếp theo
+
+        Trip
+            Trạng thái chuyến
+            Thứ tự trạng thái
+            Hoàn thành chuyến
+
+        Payment
+            Tính cước
+            Tiền mặt
+            Điện tử
+            Thanh toán thất bại
+
+        Security
+            Xác thực
+            Phân quyền
+            Bảo vệ dữ liệu
+            Audit Log
+```
+
+## Kết luận BA
+
+> **Business Rules là cơ sở để chuyển từ yêu cầu nghiệp vụ sang thiết kế hệ thống.**
+
+Các quy tắc đã được xác định sẽ được sử dụng để xây dựng **Functional Requirements, Use Case, Activity Diagram, State Diagram và thiết kế hệ thống**.
+
+Các quy tắc **chưa được xác định** phải được BA đưa vào danh sách **Open Issues / Questions for Stakeholders** và xác nhận trước khi nhóm phát triển triển khai.
+
+### Chuỗi phân tích hoàn chỉnh
+
+```mermaid
+flowchart LR
+    A[Business Requirements]
+    --> B[Functional Requirements]
+    --> C[Use Case Diagram]
+    --> D[Use Case Specification]
+    --> E[Business Process]
+    --> F[Business Rules]
+    --> G[Open Issues]
+    --> H[MVP Scope]
+```
