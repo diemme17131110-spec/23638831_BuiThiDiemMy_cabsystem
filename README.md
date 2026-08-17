@@ -1290,3 +1290,412 @@ flowchart TD
 | **BR13 – Ổn định/sẵn sàng** | NFR |
 | **BR14 – Mở rộng tương lai** | NFR |
 
+# CAB System – Use Case Diagram
+
+## 1. Actors
+
+Hệ thống có các actor chính:
+
+- **Customer** – Khách hàng
+- **Driver** – Tài xế
+- **Operations Staff** – Nhân viên vận hành
+- **Administrator** – Quản trị viên
+- **Payment Provider** – Nhà cung cấp thanh toán
+- **Notification Provider** – Nhà cung cấp thông báo
+
+---
+
+# 2. Use Case Diagram – Tổng quan
+
+```mermaid
+flowchart LR
+
+    Customer[👤 Customer<br/>Khách hàng]
+    Driver[🚗 Driver<br/>Tài xế]
+    Operator[👨‍💼 Operations Staff<br/>Nhân viên vận hành]
+    Admin[🔐 Administrator<br/>Quản trị viên]
+    Payment[💳 Payment Provider<br/>Nhà cung cấp thanh toán]
+    Notification[🔔 Notification Provider<br/>Nhà cung cấp thông báo]
+
+    subgraph CAB["CAB SYSTEM"]
+        UC01((Đăng ký tài khoản))
+        UC02((Đăng nhập))
+        UC03((Cập nhật thông tin))
+
+        UC04((Đặt xe))
+        UC05((Theo dõi chuyến đi))
+        UC06((Xem lịch sử chuyến))
+        UC07((Đánh giá tài xế))
+
+        UC08((Quản lý hồ sơ tài xế))
+        UC09((Quản lý phương tiện))
+        UC10((Cập nhật trạng thái sẵn sàng))
+        UC11((Nhận / Từ chối chuyến))
+        UC12((Cập nhật trạng thái chuyến))
+        UC13((Cập nhật vị trí))
+
+        UC14((Tìm tài xế phù hợp))
+        UC15((Phân công tài xế))
+
+        UC16((Tính cước))
+        UC17((Thanh toán))
+        UC18((Xử lý thanh toán thất bại))
+
+        UC19((Gửi thông báo))
+
+        UC20((Quản lý khách hàng))
+        UC21((Quản lý tài xế))
+        UC22((Quản lý phương tiện))
+        UC23((Theo dõi chuyến đang diễn ra))
+        UC24((Xử lý chuyến bị lỗi))
+        UC25((Tra cứu giao dịch))
+
+        UC26((Quản lý tài khoản và phân quyền))
+        UC27((Xem báo cáo))
+        UC28((Lưu Audit Log))
+    end
+
+    Customer --- UC01
+    Customer --- UC02
+    Customer --- UC03
+    Customer --- UC04
+    Customer --- UC05
+    Customer --- UC06
+    Customer --- UC07
+
+    Driver --- UC01
+    Driver --- UC02
+    Driver --- UC03
+    Driver --- UC08
+    Driver --- UC09
+    Driver --- UC10
+    Driver --- UC11
+    Driver --- UC12
+    Driver --- UC13
+
+    Operator --- UC20
+    Operator --- UC21
+    Operator --- UC22
+    Operator --- UC23
+    Operator --- UC24
+    Operator --- UC25
+    Operator --- UC27
+
+    Admin --- UC26
+    Admin --- UC28
+
+    Payment --- UC17
+    Notification --- UC19
+```
+
+---
+
+# 3. Use Case chính – Đặt xe
+
+```mermaid
+flowchart LR
+
+    Customer[👤 Customer]
+
+    subgraph CAB["CAB SYSTEM"]
+        Book((Đặt xe))
+        Input((Nhập điểm đón / điểm đến))
+        Type((Chọn loại xe))
+        Search((Tìm tài xế))
+        Assign((Phân công tài xế))
+        Track((Theo dõi chuyến))
+        Notify((Nhận thông báo))
+    end
+
+    Customer --> Book
+
+    Book -.->|include| Input
+    Book -.->|include| Type
+    Book -.->|include| Search
+    Search -.->|include| Assign
+    Book -.->|include| Track
+    Book -.->|include| Notify
+```
+
+---
+
+# 4. Use Case – Tìm và phân công tài xế
+
+```mermaid
+flowchart LR
+
+    Customer[👤 Customer]
+    Driver[🚗 Driver]
+
+    subgraph CAB["CAB SYSTEM"]
+        Booking((Yêu cầu đặt xe))
+        Search((Tìm tài xế phù hợp))
+        CheckLocation((Kiểm tra vị trí))
+        CheckStatus((Kiểm tra trạng thái))
+        Priority((Ưu tiên tài xế))
+        Assign((Gửi yêu cầu chuyến))
+        Accept((Nhận chuyến))
+        Reject((Từ chối chuyến))
+        Retry((Tìm tài xế khác))
+        NoDriver((Thông báo không tìm được tài xế))
+    end
+
+    Customer --> Booking
+    Booking --> Search
+
+    Search -.->|include| CheckLocation
+    Search -.->|include| CheckStatus
+    Search -.->|include| Priority
+
+    Search --> Assign
+    Assign --> Driver
+
+    Driver --> Accept
+    Driver --> Reject
+
+    Reject -.->|extend| Retry
+    Retry --> Search
+
+    Search --> NoDriver
+    NoDriver --> Customer
+```
+
+---
+
+# 5. Use Case – Thực hiện chuyến đi
+
+```mermaid
+flowchart LR
+
+    Driver[🚗 Driver]
+    Customer[👤 Customer]
+
+    subgraph CAB["CAB SYSTEM"]
+        Accept((Nhận chuyến))
+        Arrive((Cập nhật đã đến))
+        Pickup((Cập nhật đã đón khách))
+        Move((Cập nhật đang di chuyển))
+        Complete((Hoàn thành chuyến))
+        Track((Theo dõi trạng thái))
+    end
+
+    Driver --> Accept
+    Accept --> Arrive
+    Arrive --> Pickup
+    Pickup --> Move
+    Move --> Complete
+
+    Customer --> Track
+    Arrive --> Track
+    Pickup --> Track
+    Move --> Track
+    Complete --> Track
+```
+
+---
+
+# 6. Use Case – Thanh toán
+
+```mermaid
+flowchart LR
+
+    Customer[👤 Customer]
+    Payment[💳 Payment Provider]
+
+    subgraph CAB["CAB SYSTEM"]
+        Complete((Hoàn thành chuyến))
+        Fare((Tính cước))
+        PaymentUC((Thanh toán))
+        Cash((Thanh toán tiền mặt))
+        Electronic((Thanh toán điện tử))
+        Result((Nhận kết quả thanh toán))
+        Retry((Xử lý thanh toán lại))
+        Notify((Thông báo kết quả))
+    end
+
+    Complete --> Fare
+    Fare --> PaymentUC
+
+    Customer --> PaymentUC
+
+    PaymentUC -.->|extend| Cash
+    PaymentUC -.->|extend| Electronic
+
+    Electronic --> Payment
+    Payment --> Result
+
+    Result --> Notify
+    Result --> Retry
+
+    Notify --> Customer
+```
+
+---
+
+# 7. Use Case – Quản lý vận hành
+
+```mermaid
+flowchart LR
+
+    Operator[👨‍💼 Operations Staff]
+
+    subgraph CAB["CAB SYSTEM"]
+        CustomerManagement((Quản lý khách hàng))
+        DriverManagement((Quản lý tài xế))
+        VehicleManagement((Quản lý phương tiện))
+        TripManagement((Theo dõi chuyến))
+        ErrorHandling((Xử lý chuyến bị lỗi))
+        Transaction((Tra cứu giao dịch))
+        Report((Xem báo cáo))
+    end
+
+    Operator --> CustomerManagement
+    Operator --> DriverManagement
+    Operator --> VehicleManagement
+    Operator --> TripManagement
+    Operator --> ErrorHandling
+    Operator --> Transaction
+    Operator --> Report
+```
+
+---
+
+# 8. Use Case – Quản trị hệ thống
+
+```mermaid
+flowchart LR
+
+    Admin[🔐 Administrator]
+
+    subgraph CAB["CAB SYSTEM"]
+        Account((Quản lý tài khoản))
+        Role((Phân quyền))
+        Access((Kiểm soát quyền truy cập))
+        Audit((Lưu Audit Log))
+    end
+
+    Admin --> Account
+    Admin --> Role
+    Admin --> Access
+    Admin --> Audit
+```
+
+---
+
+# 9. Các quan hệ Use Case quan trọng
+
+## <<include>>
+
+Dùng khi một Use Case **luôn luôn cần** một Use Case khác.
+
+Ví dụ:
+
+```text
+Đặt xe
+  <<include>>
+Nhập điểm đón / điểm đến
+```
+
+```text
+Tìm tài xế
+  <<include>>
+Kiểm tra vị trí
+```
+
+```text
+Tìm tài xế
+  <<include>>
+Kiểm tra trạng thái
+```
+
+## <<extend>>
+
+Dùng khi một hành vi **chỉ xảy ra trong một trường hợp cụ thể**.
+
+Ví dụ:
+
+```text
+Tìm tài xế
+      ↑
+   <<extend>>
+      |
+Tìm tài xế khác
+```
+
+```text
+Thanh toán
+      ↑
+   <<extend>>
+      |
+Xử lý thanh toán thất bại
+```
+
+---
+
+# 10. Use Case Diagram MVP – 7 tuần
+
+Nếu phạm vi dự án chỉ làm **MVP trong 7 tuần**, nên tập trung vào các Use Case sau:
+
+```mermaid
+flowchart TB
+
+    Customer[👤 Customer]
+    Driver[🚗 Driver]
+    Operator[👨‍💼 Operations Staff]
+    Payment[💳 Payment Provider]
+    Notification[🔔 Notification Provider]
+
+    subgraph MVP["CAB SYSTEM - MVP"]
+        A((Đăng ký / Đăng nhập))
+        B((Đặt xe))
+        C((Tìm tài xế))
+        D((Nhận / Từ chối chuyến))
+        E((Theo dõi chuyến))
+        F((Cập nhật trạng thái chuyến))
+        G((Tính cước))
+        H((Thanh toán))
+        I((Thông báo))
+        J((Quản lý vận hành))
+    end
+
+    Customer --> A
+    Customer --> B
+    Customer --> E
+
+    Driver --> A
+    Driver --> C
+    Driver --> D
+    Driver --> F
+
+    Operator --> J
+
+    B --> C
+    C --> D
+    D --> F
+    F --> G
+    G --> H
+    H --> I
+    I --> Customer
+    I --> Driver
+
+    Payment --> H
+    Notification --> I
+```
+
+# 11. Các Use Case nên ưu tiên trong MVP
+
+| Priority | Use Case | Lý do |
+|---|---|---|
+| 🔴 **P0** | Đăng ký / Đăng nhập | Nền tảng cho người dùng |
+| 🔴 **P0** | Đặt xe | Chức năng kinh doanh cốt lõi |
+| 🔴 **P0** | Tìm tài xế | Chức năng cốt lõi của CAB |
+| 🔴 **P0** | Nhận / Từ chối chuyến | Cần để phân công tài xế |
+| 🔴 **P0** | Quản lý trạng thái chuyến | Cần để hoàn thành chuyến |
+| 🔴 **P0** | Tính cước | Cần xác định số tiền |
+| 🔴 **P0** | Thanh toán | Hoàn thành quy trình kinh doanh |
+| 🔴 **P0** | Thông báo | Đảm bảo khách hàng/tài xế biết trạng thái |
+| 🟠 **P1** | Quản lý vận hành | Cần cho doanh nghiệp vận hành |
+| 🟠 **P1** | Theo dõi vị trí | Hỗ trợ tìm tài xế gần |
+| 🟡 **P2** | Lịch sử chuyến | Có thể hoàn thiện sau chức năng lõi |
+| 🟡 **P2** | Đánh giá tài xế | Không ảnh hưởng đến việc hoàn thành chuyến |
+| 🟡 **P2** | Báo cáo nâng cao | Có thể phát triển sau MVP |
