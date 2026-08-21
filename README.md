@@ -2422,3 +2422,92 @@ flowchart LR
     --> G[Open Issues]
     --> H[MVP Scope]
 ```
+# CAB System – Overall Use Case Diagram
+
+```mermaid
+flowchart LR
+    %% Actors
+    Customer[👤 Customer]
+    Driver[🚗 Driver]
+    Operator[👨‍💼 Operations Staff]
+    Admin[🔐 Administrator]
+    Payment[💳 Payment Provider]
+    Notification[🔔 Notification Provider]
+
+    %% System Boundary
+    subgraph CAB["CAB System"]
+        UC1([Register Account])
+        UC2([Login])
+        UC3([Manage Profile])
+
+        UC4([Book Ride])
+        UC5([Track Trip])
+        UC6([View Trip History])
+        UC7([Rate Driver])
+
+        UC8([Manage Driver Profile])
+        UC9([Manage Vehicle])
+        UC10([Set Availability])
+        UC11([Accept/Reject Trip])
+        UC12([Update Trip Status])
+
+        UC13([Find & Assign Driver])
+
+        UC14([Calculate Fare])
+        UC15([Process Payment])
+
+        UC16([Send Notifications])
+
+        UC17([Manage Customers])
+        UC18([Manage Drivers])
+        UC19([Manage Vehicles])
+        UC20([Monitor Trips])
+        UC21([Handle Incidents])
+        UC22([View Reports])
+
+        UC23([Manage Accounts & Roles])
+        UC24([Audit Log])
+    end
+
+    %% Customer
+    Customer --- UC1
+    Customer --- UC2
+    Customer --- UC3
+    Customer --- UC4
+    Customer --- UC5
+    Customer --- UC6
+    Customer --- UC7
+
+    %% Driver
+    Driver --- UC2
+    Driver --- UC3
+    Driver --- UC8
+    Driver --- UC9
+    Driver --- UC10
+    Driver --- UC11
+    Driver --- UC12
+
+    %% Operations Staff
+    Operator --- UC17
+    Operator --- UC18
+    Operator --- UC19
+    Operator --- UC20
+    Operator --- UC21
+    Operator --- UC22
+
+    %% Administrator
+    Admin --- UC23
+    Admin --- UC24
+
+    %% External Systems
+    Payment --- UC15
+    Notification --- UC16
+
+    %% Internal Relationships
+    UC4 --> UC13
+    UC11 --> UC12
+    UC12 --> UC14
+    UC14 --> UC15
+    UC15 --> UC16
+    UC13 --> UC16
+```
