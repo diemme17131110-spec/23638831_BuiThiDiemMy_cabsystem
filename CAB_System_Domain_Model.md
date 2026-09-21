@@ -123,41 +123,42 @@ Quy ước bổ sung để giữ coupling thấp:
 
 ```mermaid
 flowchart LR
-    AUTH(["Identity & Access"])
+    AUTH["Identity & Access"]
 
     BOOK("Ride Booking")
-    MATCH[["Ride Matching<br/>& Dispatch"]]
-    TRIP[["Trip Lifecycle<br/>Management"]]
+    MATCH["Ride Matching<br/>Dispatch"]
+    TRIP["Trip Lifecycle<br/>Management"]
     DRV("Driver & Vehicle Mgmt")
     LOC("Location & Geo Services")
     PAY("Fare & Payment")
     RATE("Rating & Feedback")
     CUST("Customer Mgmt")
     OPS("Operations & Incident")
-    NOTI(["Notification"])
-    REPT(["Reporting & Analytics"])
-    AUDIT(["Audit & Compliance"])
+    NOTI["Notification"]
+    REPT["Reporting & Analytics"]
+    AUDIT["Audit & Compliance"]
 
-    PP[/"Payment Provider (ngoài)"/]
-    MP[/"Map & GPS Provider (ngoài)"/]
-    NP[/"Notification Provider (ngoài)"/]
+    PP[/Payment Provider (ngoài)/]
+    MP[/Map & GPS Provider (ngoài)/]
+    NP[/Notification Provider (ngoài)/]
 
-    BOOK -- "event: BookingCreated" --> MATCH
-    MATCH -- "cập nhật status ASSIGNED / NO_DRIVER" --> BOOK
-    MATCH -- "OHS (sync): GET /drivers/nearby" --> LOC
-    DRV -- "event: DriverLocationUpdated" --> LOC
-    DRV -- "event: DriverAvailabilityChanged (read-model)" --> MATCH
-    MATCH -- "event: DriverOfferAccepted" --> TRIP
-    TRIP -- "event: DriverLocationUpdated (tracking)" --> DRV
-    TRIP -- "event: TripCompleted" --> PAY
-    TRIP -- "event: TripCompleted" --> RATE
-    RATE -- "event: RatingSubmitted (cập nhật average)" --> DRV
-    PAY -. "ACL: chuẩn hóa webhook thanh toán" .-> PP
-    LOC -. "ACL: chuẩn hóa toạ độ/ETA" .-> MP
-    NOTI -. "ACL: gửi push/SMS" .-> NP
+    BOOK -- "BookingCreated" --> MATCH
+    MATCH -- "ASSIGNED/NO_DRIVER" --> BOOK
+    MATCH -- "GET /drivers/nearby" --> LOC
+    DRV -- "DriverLocationUpdated" --> LOC
+    DRV -- "DriverAvailabilityChanged" --> MATCH
+    MATCH -- "DriverOfferAccepted" --> TRIP
+    TRIP -- "Tracking" --> DRV
+    TRIP -- "TripCompleted" --> PAY
+    TRIP -- "TripCompleted" --> RATE
+    RATE -- "RatingSubmitted" --> DRV
 
-    TRIP -- "event: TripStuck" --> OPS
-    PAY -- "event: PaymentFailed (lặp lại)" --> OPS
+    PAY -. "ACL" .-> PP
+    LOC -. "ACL" .-> MP
+    NOTI -. "ACL" .-> NP
+
+    TRIP -- "TripStuck" --> OPS
+    PAY -- "PaymentFailed" --> OPS
 
     MATCH -- events --> NOTI
     TRIP -- events --> NOTI
@@ -170,15 +171,15 @@ flowchart LR
 
     BOOK -- events --> AUDIT
     PAY -- events --> AUDIT
-    AUTH -- "event: RoleAssigned" --> AUDIT
+    AUTH -- "RoleAssigned" --> AUDIT
 
-    AUTH -. "Conformist: mọi context xác thực bằng JWT do Identity phát hành" .-> BOOK
-    AUTH -. "" .-> MATCH
-    AUTH -. "" .-> TRIP
-    AUTH -. "" .-> PAY
-    AUTH -. "" .-> DRV
-    AUTH -. "" .-> CUST
-    AUTH -. "" .-> OPS
+    AUTH -. "Conformist: JWT" .-> BOOK
+    AUTH -.-> MATCH
+    AUTH -.-> TRIP
+    AUTH -.-> PAY
+    AUTH -.-> DRV
+    AUTH -.-> CUST
+    AUTH -.-> OPS
 ```
 
 *Ghi chú ký hiệu:* mũi tên liền (`-->`) = liên kết nghiệp vụ (event bất đồng bộ hoặc gọi API đồng bộ); mũi tên chấm (`-.->`) = quan hệ hạ tầng/ràng buộc (ACL với bên ngoài, Conformist với Identity).
