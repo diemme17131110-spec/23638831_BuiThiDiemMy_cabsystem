@@ -125,55 +125,55 @@ Quy ước bổ sung để giữ coupling thấp:
 flowchart LR
     AUTH["Identity & Access"]
 
-    BOOK("Ride Booking")
-    MATCH["Ride Matching<br/>Dispatch"]
-    TRIP["Trip Lifecycle<br/>Management"]
-    DRV("Driver & Vehicle Mgmt")
-    LOC("Location & Geo Services")
-    PAY("Fare & Payment")
-    RATE("Rating & Feedback")
-    CUST("Customer Mgmt")
-    OPS("Operations & Incident")
+    BOOK["Ride Booking"]
+    MATCH["Ride Matching & Dispatch"]
+    TRIP["Trip Lifecycle Management"]
+    DRV["Driver & Vehicle Mgmt"]
+    LOC["Location & Geo Services"]
+    PAY["Fare & Payment"]
+    RATE["Rating & Feedback"]
+    CUST["Customer Mgmt"]
+    OPS["Operations & Incident"]
     NOTI["Notification"]
     REPT["Reporting & Analytics"]
     AUDIT["Audit & Compliance"]
 
-    PP[/Payment Provider (ngoài)/]
-    MP[/Map & GPS Provider (ngoài)/]
-    NP[/Notification Provider (ngoài)/]
+    PP["Payment Provider (External)"]
+    MP["Map & GPS Provider (External)"]
+    NP["Notification Provider (External)"]
 
-    BOOK -- "BookingCreated" --> MATCH
-    MATCH -- "ASSIGNED/NO_DRIVER" --> BOOK
-    MATCH -- "GET /drivers/nearby" --> LOC
-    DRV -- "DriverLocationUpdated" --> LOC
-    DRV -- "DriverAvailabilityChanged" --> MATCH
-    MATCH -- "DriverOfferAccepted" --> TRIP
-    TRIP -- "Tracking" --> DRV
-    TRIP -- "TripCompleted" --> PAY
-    TRIP -- "TripCompleted" --> RATE
-    RATE -- "RatingSubmitted" --> DRV
+    BOOK -->|BookingCreated| MATCH
+    MATCH -->|ASSIGNED / NO_DRIVER| BOOK
+    MATCH -->|GET /drivers/nearby| LOC
+    DRV -->|DriverLocationUpdated| LOC
+    DRV -->|DriverAvailabilityChanged| MATCH
+    MATCH -->|DriverOfferAccepted| TRIP
+    TRIP -->|Tracking| DRV
+    TRIP -->|TripCompleted| PAY
+    TRIP -->|TripCompleted| RATE
+    RATE -->|RatingSubmitted| DRV
 
-    PAY -. "ACL" .-> PP
-    LOC -. "ACL" .-> MP
-    NOTI -. "ACL" .-> NP
+    PAY -.->|ACL| PP
+    LOC -.->|ACL| MP
+    NOTI -.->|ACL| NP
 
-    TRIP -- "TripStuck" --> OPS
-    PAY -- "PaymentFailed" --> OPS
+    TRIP -->|TripStuck| OPS
+    PAY -->|PaymentFailed| OPS
 
-    MATCH -- events --> NOTI
-    TRIP -- events --> NOTI
-    PAY -- events --> NOTI
+    MATCH -->|events| NOTI
+    TRIP -->|events| NOTI
+    PAY -->|events| NOTI
 
-    MATCH -- events --> REPT
-    TRIP -- events --> REPT
-    PAY -- events --> REPT
-    OPS -- events --> REPT
+    MATCH -->|events| REPT
+    TRIP -->|events| REPT
+    PAY -->|events| REPT
+    OPS -->|events| REPT
 
-    BOOK -- events --> AUDIT
-    PAY -- events --> AUDIT
-    AUTH -- "RoleAssigned" --> AUDIT
+    BOOK -->|events| AUDIT
+    PAY -->|events| AUDIT
+    AUTH -->|RoleAssigned| AUDIT
 
-    AUTH -. "Conformist: JWT" .-> BOOK
+    AUTH -.->|Conformist: JWT| BOOK
     AUTH -.-> MATCH
     AUTH -.-> TRIP
     AUTH -.-> PAY
