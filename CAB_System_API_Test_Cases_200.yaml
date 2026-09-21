@@ -1,0 +1,1886 @@
+# =====================================================================
+# CAB System - API Test Cases (200 test case)
+# Bam theo openapi.yaml da tao truoc do (13 file FR trong /paths)
+# Moi endpoint >= 3 test case: positive / negative / businessRule
+# 8 endpoint cot loi co them 1 test case 'additional'
+# =====================================================================
+project: 23638831_BuiThiDiemMy_cabsystem
+title: CAB System - API Test Cases
+sourceApi: openapi.yaml
+standard: IEEE 829 / Agile Testing
+totalEndpoints: 64
+totalTestCases: 200
+priorityLegend:
+  High: Luồng chính (happy path) và các Business Rule bắt buộc
+  Medium: Validation lỗi đầu vào và các edge case
+modules:
+- code: AUTH
+  file: fr01-auth.yaml
+  name: 1. Account & Auth (FR01)
+  description: Đăng ký, đăng nhập, làm mới token, thông tin tài khoản (BR-01)
+  endpoints:
+  - method: POST
+    path: /auth/register
+    fr: FR01.1
+    description: Đăng ký tài khoản
+    allowedRole: Không cần đăng nhập
+    testCases:
+    - id: TC-AUTH-001
+      type: positive
+      priority: High
+      scenario: Đăng ký tài khoản khách hàng thành công
+      preconditions: Số điện thoại chưa tồn tại trong hệ thống
+      requestData: '{"fullName":"Nguyễn Văn An","phone":"0912345678","password":"Passw0rd!","role":"CUSTOMER"}'
+      expectedResult: 201 Created; trả về User với id, role=CUSTOMER, status=ACTIVE
+    - id: TC-AUTH-002
+      type: negative
+      priority: Medium
+      scenario: Đăng ký thiếu trường bắt buộc
+      preconditions: Không có
+      requestData: '{"phone":"0912345678"}'
+      expectedResult: 400 Bad Request; code=VALIDATION_ERROR nêu rõ field fullName, password bắt buộc
+    - id: TC-AUTH-003
+      type: businessRule
+      priority: High
+      scenario: Đăng ký với số điện thoại đã tồn tại
+      preconditions: Số điện thoại 0912345678 đã đăng ký trước đó
+      requestData: '{"fullName":"Trần Văn Bình","phone":"0912345678","password":"Passw0rd!","role":"CUSTOMER"}'
+      expectedResult: 409 Conflict; thông báo số điện thoại đã được sử dụng
+  - method: POST
+    path: /auth/login
+    fr: FR01.2
+    description: Đăng nhập
+    allowedRole: Không cần đăng nhập
+    testCases:
+    - id: TC-AUTH-004
+      type: positive
+      priority: High
+      scenario: Đăng nhập thành công với thông tin đúng
+      preconditions: Tài khoản 0912345678 đang ACTIVE
+      requestData: '{"phone":"0912345678","password":"Passw0rd!"}'
+      expectedResult: 200 OK; trả về accessToken, refreshToken, expiresIn=3600 (BR-01)
+    - id: TC-AUTH-005
+      type: negative
+      priority: Medium
+      scenario: Đăng nhập với mật khẩu sai
+      preconditions: Tài khoản 0912345678 đang ACTIVE
+      requestData: '{"phone":"0912345678","password":"WrongPass"}'
+      expectedResult: 401 Unauthorized; code=UNAUTHORIZED, không cấp token
+    - id: TC-AUTH-006
+      type: businessRule
+      priority: High
+      scenario: Đăng nhập bằng tài khoản đã bị khóa
+      preconditions: Tài khoản 0900000001 ở trạng thái LOCKED
+      requestData: '{"phone":"0900000001","password":"Passw0rd!"}'
+      expectedResult: 401 Unauthorized; thông báo tài khoản bị khóa
+    - id: TC-AUTH-007
+      type: additional
+      priority: Medium
+      scenario: 'Chống brute-force: khóa tạm sau nhiều lần đăng nhập sai liên tiếp'
+      preconditions: Tài khoản hợp lệ, đã nhập sai mật khẩu 5 lần liên tiếp trong 5 phút
+      requestData: '{"phone":"0912345678","password":"WrongPass6"}'
+      expectedResult: 401 Unauthorized kèm code=ACCOUNT_TEMP_LOCKED (BR-18, ngưỡng cụ thể cần BA xác nhận)
+  - method: POST
+    path: /auth/refresh
+    fr: '-'
+    description: Làm mới access token
+    allowedRole: Sở hữu refreshToken hợp lệ
+    testCases:
+    - id: TC-AUTH-008
+      type: positive
+      priority: High
+      scenario: Làm mới token thành công với refreshToken hợp lệ
+      preconditions: refreshToken còn hiệu lực
+      requestData: '{"refreshToken":"<valid_refresh_token>"}'
+      expectedResult: 200 OK; trả về TokenPair mới
+    - id: TC-AUTH-009
+      type: negative
+      priority: Medium
+      scenario: Làm mới token thiếu refreshToken
+      preconditions: Không có
+      requestData: '{}'
+      expectedResult: 400 Bad Request; field refreshToken bắt buộc
+    - id: TC-AUTH-010
+      type: businessRule
+      priority: High
+      scenario: Làm mới token với refreshToken đã hết hạn/bị thu hồi
+      preconditions: refreshToken đã hết hạn
+      requestData: '{"refreshToken":"<expired_refresh_token>"}'
+      expectedResult: 401 Unauthorized; yêu cầu đăng nhập lại
+  - method: POST
+    path: /auth/logout
+    fr: '-'
+    description: Đăng xuất
+    allowedRole: Đã đăng nhập (Bearer token)
+    testCases:
+    - id: TC-AUTH-011
+      type: positive
+      priority: High
+      scenario: Đăng xuất thành công
+      preconditions: Người dùng đang đăng nhập với accessToken hợp lệ
+      requestData: 'Header: Authorization: Bearer <valid_token>'
+      expectedResult: 204 No Content; token bị vô hiệu hóa cho các request sau
+    - id: TC-AUTH-012
+      type: negative
+      priority: Medium
+      scenario: Đăng xuất khi không có token
+      preconditions: Không gửi header Authorization
+      requestData: Không có Authorization header
+      expectedResult: 401 Unauthorized
+    - id: TC-AUTH-013
+      type: businessRule
+      priority: High
+      scenario: Gọi lại API cần xác thực bằng token vừa đăng xuất
+      preconditions: Token vừa được đăng xuất ở bước trước
+      requestData: 'Header: Authorization: Bearer <revoked_token>'
+      expectedResult: 401 Unauthorized (BR-01) tại các endpoint yêu cầu xác thực
+  - method: GET
+    path: /auth/me
+    fr: FR01.4
+    description: Xem thông tin tài khoản hiện tại
+    allowedRole: Đã đăng nhập
+    testCases:
+    - id: TC-AUTH-014
+      type: positive
+      priority: High
+      scenario: Lấy thông tin tài khoản đang đăng nhập
+      preconditions: accessToken hợp lệ
+      requestData: 'Header: Authorization: Bearer <valid_token>'
+      expectedResult: 200 OK; trả về User đầy đủ fullName, phone, role, status
+    - id: TC-AUTH-015
+      type: negative
+      priority: Medium
+      scenario: Truy cập khi token đã hết hạn
+      preconditions: accessToken đã hết hạn
+      requestData: 'Header: Authorization: Bearer <expired_token>'
+      expectedResult: 401 Unauthorized; ứng dụng điều hướng về màn hình đăng nhập
+    - id: TC-AUTH-016
+      type: businessRule
+      priority: High
+      scenario: Password/hash không bao giờ xuất hiện trong response
+      preconditions: accessToken hợp lệ
+      requestData: 'Header: Authorization: Bearer <valid_token>'
+      expectedResult: 200 OK; payload JSON không chứa trường password/passwordHash
+  - method: PATCH
+    path: /auth/me
+    fr: FR01.3
+    description: Cập nhật thông tin tài khoản
+    allowedRole: Đã đăng nhập
+    testCases:
+    - id: TC-AUTH-017
+      type: positive
+      priority: High
+      scenario: Cập nhật họ tên và email thành công
+      preconditions: Đã đăng nhập
+      requestData: '{"fullName":"Nguyễn Văn An Bình","email":"anbinh@example.com"}'
+      expectedResult: 200 OK; User trả về với dữ liệu đã cập nhật
+    - id: TC-AUTH-018
+      type: negative
+      priority: Medium
+      scenario: Cập nhật với email sai định dạng
+      preconditions: Đã đăng nhập
+      requestData: '{"email":"an.nguyen_invalid"}'
+      expectedResult: 400 Bad Request; code=VALIDATION_ERROR field email
+    - id: TC-AUTH-019
+      type: businessRule
+      priority: High
+      scenario: Cập nhật thông tin của tài khoản khác
+      preconditions: Đăng nhập bằng tài khoản A, cố gắng gửi request nhắm tới userId của tài khoản B
+      requestData: '{"fullName":"Hacker"}'
+      expectedResult: 403 Forbidden; chỉ được sửa hồ sơ của chính mình (BR-02)
+  totalTestCases: 19
+- code: CUST
+  file: fr02-customers.yaml
+  name: 2. Customers (FR02)
+  description: Hồ sơ khách hàng và lịch sử chuyến đi (BR-01)
+  endpoints:
+  - method: GET
+    path: /customers/{customerId}
+    fr: FR02.1
+    description: Xem hồ sơ khách hàng
+    allowedRole: Chính khách hàng đó, Operator hoặc Admin
+    testCases:
+    - id: TC-CUST-001
+      type: positive
+      priority: High
+      scenario: Khách hàng xem hồ sơ của chính mình
+      preconditions: Đã đăng nhập với role CUSTOMER
+      requestData: customerId = id của chính khách hàng
+      expectedResult: 200 OK; trả về Customer gồm totalTrips
+    - id: TC-CUST-002
+      type: negative
+      priority: Medium
+      scenario: Xem hồ sơ với customerId không tồn tại
+      preconditions: Đã đăng nhập
+      requestData: customerId = 00000000-0000-0000-0000-000000000000
+      expectedResult: 404 Not Found
+    - id: TC-CUST-003
+      type: businessRule
+      priority: High
+      scenario: Khách hàng A cố xem hồ sơ khách hàng B
+      preconditions: Đăng nhập bằng tài khoản A (CUSTOMER)
+      requestData: customerId = id của khách hàng B
+      expectedResult: 403 Forbidden (BR-02)
+  - method: PATCH
+    path: /customers/{customerId}
+    fr: FR02.1
+    description: Cập nhật hồ sơ khách hàng
+    allowedRole: Chính khách hàng đó hoặc Operator
+    testCases:
+    - id: TC-CUST-004
+      type: positive
+      priority: High
+      scenario: Cập nhật hồ sơ khách hàng thành công
+      preconditions: Đã đăng nhập với role CUSTOMER
+      requestData: '{"fullName":"Nguyễn Văn An Cập Nhật"}'
+      expectedResult: 200 OK; trả về Customer đã cập nhật
+    - id: TC-CUST-005
+      type: negative
+      priority: Medium
+      scenario: Gửi payload rỗng
+      preconditions: Đã đăng nhập
+      requestData: '{}'
+      expectedResult: 200 OK; không thay đổi dữ liệu (không có field nào được gửi)
+    - id: TC-CUST-006
+      type: businessRule
+      priority: High
+      scenario: Operations Staff cập nhật hồ sơ khách hàng thay mặt
+      preconditions: Đăng nhập với role OPERATOR
+      requestData: '{"fullName":"Đã hỗ trợ sửa tên"}'
+      expectedResult: 200 OK; thao tác được phép theo phân quyền Operator (BR-02)
+  - method: GET
+    path: /customers/{customerId}/trips
+    fr: FR02.2
+    description: Lịch sử chuyến đi và số tiền phải trả
+    allowedRole: Chính khách hàng đó, Operator hoặc Admin
+    testCases:
+    - id: TC-CUST-007
+      type: positive
+      priority: High
+      scenario: Xem lịch sử chuyến đi có phân trang
+      preconditions: Khách hàng đã có 25 chuyến đi
+      requestData: page=1&size=20
+      expectedResult: 200 OK; data gồm 20 Trip, meta.totalItems=25, totalPages=2
+    - id: TC-CUST-008
+      type: negative
+      priority: Medium
+      scenario: Lọc lịch sử theo khoảng thời gian
+      preconditions: Khách hàng có chuyến trong và ngoài khoảng lọc
+      requestData: from=2026-09-01T00:00:00Z&to=2026-09-30T23:59:59Z
+      expectedResult: 200 OK; chỉ trả về các Trip có createdAt trong khoảng from/to
+    - id: TC-CUST-009
+      type: businessRule
+      priority: High
+      scenario: Khách hàng chưa từng đặt chuyến nào
+      preconditions: Tài khoản mới, chưa có Trip
+      requestData: page=1&size=20
+      expectedResult: 200 OK; data=[] , meta.totalItems=0
+  totalTestCases: 9
+- code: DRV
+  file: fr03-drivers.yaml
+  name: 3. Drivers & Vehicles (FR03)
+  description: Hồ sơ tài xế, phương tiện, trạng thái sẵn sàng (BR-02, BR-03)
+  endpoints:
+  - method: GET
+    path: /drivers
+    fr: FR03.1
+    description: Danh sách tài xế
+    allowedRole: Operator, Admin
+    testCases:
+    - id: TC-DRV-001
+      type: positive
+      priority: High
+      scenario: Operator lấy danh sách tài xế đang AVAILABLE
+      preconditions: Có tài xế ở nhiều trạng thái khác nhau
+      requestData: status=AVAILABLE&page=1&size=20
+      expectedResult: 200 OK; chỉ trả về Driver có status=AVAILABLE
+    - id: TC-DRV-002
+      type: negative
+      priority: Medium
+      scenario: Truyền status không hợp lệ
+      preconditions: Đã đăng nhập với role OPERATOR
+      requestData: status=INVALID_STATUS
+      expectedResult: 400 Bad Request; giá trị status không thuộc enum DriverStatus
+    - id: TC-DRV-003
+      type: businessRule
+      priority: High
+      scenario: Khách hàng (CUSTOMER) cố truy cập danh sách tài xế nội bộ
+      preconditions: Đăng nhập với role CUSTOMER
+      requestData: 'Header: Authorization: Bearer <customer_token>'
+      expectedResult: 403 Forbidden (BR-02)
+  - method: POST
+    path: /drivers
+    fr: FR03.1
+    description: Tạo hồ sơ tài xế
+    allowedRole: Operator, Admin
+    testCases:
+    - id: TC-DRV-004
+      type: positive
+      priority: High
+      scenario: Tạo hồ sơ tài xế mới thành công
+      preconditions: Số GPLX chưa tồn tại trong hệ thống
+      requestData: '{"fullName":"Lê Văn Cường","phone":"0933112233","licenseNumber":"B2-7901234567"}'
+      expectedResult: 201 Created; Driver mới ở trạng thái mặc định OFFLINE
+    - id: TC-DRV-005
+      type: negative
+      priority: Medium
+      scenario: Tạo hồ sơ thiếu số GPLX
+      preconditions: Không có
+      requestData: '{"fullName":"Lê Văn Cường","phone":"0933112233"}'
+      expectedResult: 400 Bad Request; field licenseNumber bắt buộc
+    - id: TC-DRV-006
+      type: businessRule
+      priority: High
+      scenario: Tạo hồ sơ với số GPLX đã tồn tại
+      preconditions: licenseNumber B2-7901234567 đã được đăng ký cho tài xế khác
+      requestData: '{"fullName":"Nguyễn Văn D","phone":"0933112244","licenseNumber":"B2-7901234567"}'
+      expectedResult: 409 Conflict; số GPLX đã được đăng ký
+  - method: GET
+    path: /drivers/{driverId}
+    fr: FR03.1
+    description: Xem hồ sơ tài xế
+    allowedRole: Chính tài xế đó, Operator, Admin
+    testCases:
+    - id: TC-DRV-007
+      type: positive
+      priority: High
+      scenario: Xem hồ sơ tài xế thành công
+      preconditions: driverId tồn tại
+      requestData: driverId hợp lệ
+      expectedResult: 200 OK; trả về Driver gồm averageRating, activeVehicle
+    - id: TC-DRV-008
+      type: negative
+      priority: Medium
+      scenario: driverId không tồn tại
+      preconditions: Không có
+      requestData: driverId=00000000-0000-0000-0000-000000000000
+      expectedResult: 404 Not Found
+    - id: TC-DRV-009
+      type: businessRule
+      priority: High
+      scenario: Tài xế A xem hồ sơ tài xế B
+      preconditions: Đăng nhập với role DRIVER (tài xế A)
+      requestData: driverId = id của tài xế B
+      expectedResult: 403 Forbidden (BR-02)
+  - method: PATCH
+    path: /drivers/{driverId}
+    fr: FR03.1
+    description: Cập nhật hồ sơ tài xế
+    allowedRole: Chính tài xế đó hoặc Operator
+    testCases:
+    - id: TC-DRV-010
+      type: positive
+      priority: High
+      scenario: Tài xế tự cập nhật họ tên
+      preconditions: Đăng nhập với role DRIVER
+      requestData: '{"fullName":"Lê Văn Cường Mới"}'
+      expectedResult: 200 OK; Driver trả về với fullName đã cập nhật
+    - id: TC-DRV-011
+      type: negative
+      priority: Medium
+      scenario: Cập nhật với dữ liệu rỗng không hợp lệ
+      preconditions: Đăng nhập với role DRIVER
+      requestData: '{"fullName":""}'
+      expectedResult: 400 Bad Request; fullName không được để trống
+    - id: TC-DRV-012
+      type: businessRule
+      priority: High
+      scenario: Khách hàng cố cập nhật hồ sơ tài xế
+      preconditions: Đăng nhập với role CUSTOMER
+      requestData: '{"fullName":"Hacked"}'
+      expectedResult: 403 Forbidden (BR-02)
+  - method: PUT
+    path: /drivers/{driverId}/availability
+    fr: FR03.3
+    description: Cập nhật trạng thái sẵn sàng
+    allowedRole: Chính tài xế đó
+    testCases:
+    - id: TC-DRV-013
+      type: positive
+      priority: High
+      scenario: Tài xế chuyển trạng thái sang AVAILABLE thành công
+      preconditions: Tài xế đã đăng nhập, phương tiện đã được duyệt, GPS đang bật
+      requestData: '{"status":"AVAILABLE"}'
+      expectedResult: 200 OK; Driver.status=AVAILABLE (BR-03); xuất hiện trong danh sách phân công
+    - id: TC-DRV-014
+      type: negative
+      priority: Medium
+      scenario: Chuyển sang trạng thái không hợp lệ
+      preconditions: Đăng nhập với role DRIVER
+      requestData: '{"status":"UNKNOWN"}'
+      expectedResult: 400 Bad Request; giá trị status không thuộc enum
+    - id: TC-DRV-015
+      type: businessRule
+      priority: High
+      scenario: Chuyển sang OFFLINE khi đang có chuyến BUSY dở dang
+      preconditions: Tài xế đang ở trạng thái BUSY với 1 chuyến IN_PROGRESS
+      requestData: '{"status":"OFFLINE"}'
+      expectedResult: 409 Conflict; không cho phép offline khi đang có chuyến dở dang
+  - method: GET
+    path: /drivers/{driverId}/vehicles
+    fr: FR03.2
+    description: Danh sách phương tiện của tài xế
+    allowedRole: Chính tài xế đó, Operator
+    testCases:
+    - id: TC-DRV-016
+      type: positive
+      priority: High
+      scenario: Lấy danh sách phương tiện của tài xế
+      preconditions: Tài xế có 1 phương tiện đã đăng ký
+      requestData: driverId hợp lệ
+      expectedResult: 200 OK; trả về mảng Vehicle
+    - id: TC-DRV-017
+      type: negative
+      priority: Medium
+      scenario: driverId không tồn tại
+      preconditions: Không có
+      requestData: driverId không hợp lệ
+      expectedResult: 404 Not Found
+    - id: TC-DRV-018
+      type: businessRule
+      priority: High
+      scenario: Tài xế chưa có phương tiện nào
+      preconditions: Tài xế mới đăng ký, chưa thêm phương tiện
+      requestData: driverId hợp lệ
+      expectedResult: 200 OK; trả về mảng rỗng []
+  - method: POST
+    path: /drivers/{driverId}/vehicles
+    fr: FR03.2
+    description: Thêm phương tiện
+    allowedRole: Chính tài xế đó hoặc Operator
+    testCases:
+    - id: TC-DRV-019
+      type: positive
+      priority: High
+      scenario: Thêm phương tiện mới thành công
+      preconditions: Biển số chưa tồn tại trong hệ thống
+      requestData: '{"plateNumber":"51H-987.65","brand":"Toyota","model":"Vios","color":"Trắng","vehicleTypeCode":"CAB_4"}'
+      expectedResult: 201 Created; Vehicle mới ở trạng thái chờ duyệt
+    - id: TC-DRV-020
+      type: negative
+      priority: Medium
+      scenario: Thêm phương tiện thiếu biển số
+      preconditions: Không có
+      requestData: '{"brand":"Toyota","vehicleTypeCode":"CAB_4"}'
+      expectedResult: 400 Bad Request; field plateNumber bắt buộc
+    - id: TC-DRV-021
+      type: businessRule
+      priority: High
+      scenario: Thêm phương tiện với biển số đã tồn tại
+      preconditions: Biển số 51H-987.65 đã đăng ký cho tài xế khác
+      requestData: '{"plateNumber":"51H-987.65","vehicleTypeCode":"CAB_4"}'
+      expectedResult: 409 Conflict; biển số xe đã được đăng ký
+  - method: GET
+    path: /vehicles/{vehicleId}
+    fr: FR03.2
+    description: Chi tiết phương tiện
+    allowedRole: Chủ xe, Operator
+    testCases:
+    - id: TC-DRV-022
+      type: positive
+      priority: High
+      scenario: Xem chi tiết phương tiện thành công
+      preconditions: vehicleId tồn tại
+      requestData: vehicleId hợp lệ
+      expectedResult: 200 OK; trả về Vehicle đầy đủ thông tin
+    - id: TC-DRV-023
+      type: negative
+      priority: Medium
+      scenario: vehicleId không tồn tại
+      preconditions: Không có
+      requestData: vehicleId không hợp lệ
+      expectedResult: 404 Not Found
+    - id: TC-DRV-024
+      type: businessRule
+      priority: High
+      scenario: Tài xế khác cố xem phương tiện không thuộc sở hữu
+      preconditions: Đăng nhập với role DRIVER không sở hữu xe này
+      requestData: vehicleId của tài xế khác
+      expectedResult: 403 Forbidden (BR-02)
+  - method: PATCH
+    path: /vehicles/{vehicleId}
+    fr: FR03.2
+    description: Cập nhật phương tiện
+    allowedRole: Chủ xe, Operator
+    testCases:
+    - id: TC-DRV-025
+      type: positive
+      priority: High
+      scenario: Cập nhật màu sắc phương tiện thành công
+      preconditions: vehicleId thuộc sở hữu người dùng hiện tại
+      requestData: '{"color":"Xanh dương"}'
+      expectedResult: 200 OK; Vehicle trả về với color đã cập nhật
+    - id: TC-DRV-026
+      type: negative
+      priority: Medium
+      scenario: Cập nhật biển số trùng với xe khác
+      preconditions: Biển số mới đã tồn tại cho xe khác
+      requestData: '{"plateNumber":"51H-000.01"}'
+      expectedResult: 409 Conflict; biển số đã được sử dụng
+    - id: TC-DRV-027
+      type: businessRule
+      priority: High
+      scenario: Cập nhật phương tiện không thuộc sở hữu
+      preconditions: Đăng nhập DRIVER khác chủ xe
+      requestData: '{"color":"Đen"}'
+      expectedResult: 403 Forbidden (BR-02)
+  totalTestCases: 27
+- code: BOOK
+  file: fr04-bookings.yaml
+  name: 4. Bookings (FR04)
+  description: Tạo, theo dõi và hủy yêu cầu đặt xe (BR-04)
+  endpoints:
+  - method: POST
+    path: /bookings
+    fr: FR04.2
+    description: Tạo yêu cầu đặt xe
+    allowedRole: Customer
+    testCases:
+    - id: TC-BOOK-001
+      type: positive
+      priority: High
+      scenario: Đặt xe thành công với điểm đón, điểm đến, loại xe hợp lệ
+      preconditions: Khách hàng đã đăng nhập (UC03)
+      requestData: '{"pickup":{"latitude":10.7626,"longitude":106.6602},"dropoff":{"latitude":10.7769,"longitude":106.7009},"vehicleTypeCode":"CAB_4","paymentMethod":"CASH"}'
+      expectedResult: 201 Created; Booking.status=SEARCHING, bắt đầu quy trình FR05
+    - id: TC-BOOK-002
+      type: negative
+      priority: Medium
+      scenario: Đặt xe với điểm đón trùng điểm đến
+      preconditions: Đã đăng nhập
+      requestData: '{"pickup":{"latitude":10.77,"longitude":106.70},"dropoff":{"latitude":10.77,"longitude":106.70},"vehicleTypeCode":"CAB_4","paymentMethod":"CASH"}'
+      expectedResult: 422 Unprocessable Entity; điểm đến không được trùng điểm đón
+    - id: TC-BOOK-003
+      type: businessRule
+      priority: High
+      scenario: Đặt xe với loại xe không tồn tại
+      preconditions: Đã đăng nhập
+      requestData: '{"pickup":{"latitude":10.77,"longitude":106.70},"dropoff":{"latitude":10.82,"longitude":106.66},"vehicleTypeCode":"CAB_UFO","paymentMethod":"CASH"}'
+      expectedResult: 400 Bad Request; vehicleTypeCode không hợp lệ
+    - id: TC-BOOK-004
+      type: additional
+      priority: Medium
+      scenario: Đặt xe ngoài phạm vi phục vụ của hệ thống
+      preconditions: Đã đăng nhập
+      requestData: '{"pickup":{"latitude":10.77,"longitude":106.70},"dropoff":{"latitude":21.03,"longitude":105.85},"vehicleTypeCode":"CAB_4","paymentMethod":"CASH"}'
+      expectedResult: 422 Unprocessable Entity; khoảng cách vượt phạm vi phục vụ (Open Issue - cần BA
+        xác nhận ranh giới)
+  - method: GET
+    path: /bookings
+    fr: '-'
+    description: Danh sách yêu cầu đặt xe của người dùng hiện tại
+    allowedRole: Customer
+    testCases:
+    - id: TC-BOOK-005
+      type: positive
+      priority: High
+      scenario: Xem danh sách booking đang SEARCHING
+      preconditions: Khách hàng có nhiều booking ở các trạng thái khác nhau
+      requestData: status=SEARCHING
+      expectedResult: 200 OK; chỉ trả về booking có status=SEARCHING
+    - id: TC-BOOK-006
+      type: negative
+      priority: Medium
+      scenario: Truyền tham số size vượt giới hạn cho phép
+      preconditions: Đã đăng nhập
+      requestData: size=500
+      expectedResult: 400 Bad Request; size vượt maximum=100
+    - id: TC-BOOK-007
+      type: businessRule
+      priority: High
+      scenario: Khách hàng chưa từng đặt xe
+      preconditions: Tài khoản mới
+      requestData: page=1&size=20
+      expectedResult: 200 OK; data=[] , meta.totalItems=0
+  - method: GET
+    path: /bookings/{bookingId}
+    fr: '-'
+    description: Chi tiết yêu cầu đặt xe
+    allowedRole: Chính khách hàng đó, Operator
+    testCases:
+    - id: TC-BOOK-008
+      type: positive
+      priority: High
+      scenario: Xem chi tiết booking thành công
+      preconditions: bookingId tồn tại và thuộc về khách hàng hiện tại
+      requestData: bookingId hợp lệ
+      expectedResult: 200 OK; trả về Booking đầy đủ
+    - id: TC-BOOK-009
+      type: negative
+      priority: Medium
+      scenario: bookingId không tồn tại
+      preconditions: Không có
+      requestData: bookingId=00000000-0000-0000-0000-000000000000
+      expectedResult: 404 Not Found
+    - id: TC-BOOK-010
+      type: businessRule
+      priority: High
+      scenario: Khách hàng khác cố xem booking không thuộc về mình
+      preconditions: Đăng nhập bằng tài khoản khác
+      requestData: bookingId của khách hàng khác
+      expectedResult: 403 Forbidden (BR-02)
+  - method: GET
+    path: /bookings/{bookingId}/status
+    fr: FR04.3
+    description: Theo dõi trạng thái yêu cầu đặt xe
+    allowedRole: Chính khách hàng đó
+    testCases:
+    - id: TC-BOOK-011
+      type: positive
+      priority: High
+      scenario: Theo dõi trạng thái realtime khi đang tìm tài xế
+      preconditions: Booking đang ở trạng thái SEARCHING
+      requestData: bookingId hợp lệ
+      expectedResult: 200 OK; status=SEARCHING, updatedAt gần nhất
+    - id: TC-BOOK-012
+      type: negative
+      priority: Medium
+      scenario: Theo dõi trạng thái sau khi đã có tài xế nhận
+      preconditions: Booking vừa được ASSIGNED
+      requestData: bookingId hợp lệ
+      expectedResult: 200 OK; status=ASSIGNED phản ánh đúng thời điểm thay đổi mới nhất
+    - id: TC-BOOK-013
+      type: businessRule
+      priority: High
+      scenario: Theo dõi bookingId không tồn tại
+      preconditions: Không có
+      requestData: bookingId không hợp lệ
+      expectedResult: 404 Not Found
+  - method: POST
+    path: /bookings/{bookingId}/cancel
+    fr: FR04.4
+    description: Hủy yêu cầu đặt xe
+    allowedRole: Chính khách hàng đó
+    testCases:
+    - id: TC-BOOK-014
+      type: positive
+      priority: High
+      scenario: Hủy khi đang SEARCHING, chưa có tài xế nhận
+      preconditions: Booking ở trạng thái SEARCHING
+      requestData: '{"reason":"Khách hàng đổi ý"}'
+      expectedResult: 200 OK; Booking.status=CANCELLED, không phát sinh phí hủy
+    - id: TC-BOOK-015
+      type: negative
+      priority: Medium
+      scenario: Hủy booking không tồn tại
+      preconditions: Không có
+      requestData: '{"reason":"test"}'
+      expectedResult: 404 Not Found
+    - id: TC-BOOK-016
+      type: businessRule
+      priority: High
+      scenario: Hủy booking đã hoàn thành (ASSIGNED và chuyến đã COMPLETED)
+      preconditions: Booking đã chuyển thành Trip và hoàn thành
+      requestData: '{"reason":"Muốn hủy sau khi xong"}'
+      expectedResult: 409 Conflict; không thể hủy booking đã hoàn tất (BR-26 chính sách hủy cần BA xác
+        nhận)
+  - method: GET
+    path: /vehicle-types
+    fr: FR04.1
+    description: Danh sách loại xe / dịch vụ
+    allowedRole: Không cần đăng nhập
+    testCases:
+    - id: TC-BOOK-017
+      type: positive
+      priority: High
+      scenario: Lấy danh sách loại xe khả dụng
+      preconditions: Hệ thống có cấu hình loại xe CAB_4, CAB_7
+      requestData: Không có tham số
+      expectedResult: 200 OK; trả về mảng VehicleType gồm code, name, seats
+    - id: TC-BOOK-018
+      type: negative
+      priority: Medium
+      scenario: Gọi endpoint khi chưa đăng nhập
+      preconditions: Không gửi Authorization header
+      requestData: Không có Authorization header
+      expectedResult: 200 OK; endpoint công khai, không yêu cầu xác thực
+    - id: TC-BOOK-019
+      type: businessRule
+      priority: High
+      scenario: Hệ thống chưa cấu hình loại xe nào (môi trường mới)
+      preconditions: Database vehicle_types rỗng
+      requestData: Không có tham số
+      expectedResult: 200 OK; trả về mảng rỗng []
+  totalTestCases: 19
+- code: MATCH
+  file: fr05-matching.yaml
+  name: 5. Driver Matching (FR05)
+  description: Tìm, phân công, nhận/từ chối chuyến (BR-03 đến BR-08)
+  endpoints:
+  - method: GET
+    path: /bookings/{bookingId}/matching
+    fr: FR05.1
+    description: Trạng thái tiến trình tìm tài xế
+    allowedRole: Chính khách hàng đó, Operator
+    testCases:
+    - id: TC-MATCH-001
+      type: positive
+      priority: High
+      scenario: Xem trạng thái đang tìm tài xế
+      preconditions: Booking vừa được tạo, đang SEARCHING
+      requestData: bookingId hợp lệ
+      expectedResult: 200 OK; MatchingState.status=SEARCHING, attemptCount tăng dần
+    - id: TC-MATCH-002
+      type: negative
+      priority: Medium
+      scenario: Xem trạng thái khi đã tìm được tài xế
+      preconditions: Đã có tài xế ACCEPTED offer
+      requestData: bookingId hợp lệ
+      expectedResult: 200 OK; status=ASSIGNED, currentOfferId=null
+    - id: TC-MATCH-003
+      type: businessRule
+      priority: High
+      scenario: bookingId không tồn tại
+      preconditions: Không có
+      requestData: bookingId không hợp lệ
+      expectedResult: 404 Not Found
+  - method: POST
+    path: /bookings/{bookingId}/matching
+    fr: FR05.2
+    description: Kích hoạt lại tìm tài xế
+    allowedRole: Hệ thống / Operator
+    testCases:
+    - id: TC-MATCH-004
+      type: positive
+      priority: High
+      scenario: Kích hoạt lại tìm tài xế sau khi bị từ chối
+      preconditions: Offer trước đó bị REJECTED
+      requestData: bookingId hợp lệ
+      expectedResult: 202 Accepted; MatchingState.status=SEARCHING, attemptCount+1 (BR-06)
+    - id: TC-MATCH-005
+      type: negative
+      priority: Medium
+      scenario: Kích hoạt khi booking đã ASSIGNED
+      preconditions: Booking đã có tài xế nhận
+      requestData: bookingId hợp lệ
+      expectedResult: 409 Conflict; không thể tìm lại khi đã phân công
+    - id: TC-MATCH-006
+      type: businessRule
+      priority: High
+      scenario: Hết danh sách tài xế phù hợp sau nhiều lần thử
+      preconditions: Đã thử tối đa số lần cho phép, không còn tài xế phù hợp
+      requestData: bookingId hợp lệ
+      expectedResult: 200 OK; MatchingState.status=NO_DRIVER, thông báo khách hàng (BR-08)
+  - method: GET
+    path: /bookings/{bookingId}/matching/attempts
+    fr: '-'
+    description: Lịch sử các lần gửi yêu cầu cho tài xế
+    allowedRole: Operator
+    testCases:
+    - id: TC-MATCH-007
+      type: positive
+      priority: High
+      scenario: Xem lịch sử các lần thử phân công
+      preconditions: Booking đã trải qua 3 lần thử (2 từ chối, 1 chấp nhận)
+      requestData: bookingId hợp lệ
+      expectedResult: 200 OK; trả về 3 MatchingAttempt với result tương ứng
+    - id: TC-MATCH-008
+      type: negative
+      priority: Medium
+      scenario: Booking chưa có lần thử nào
+      preconditions: Booking vừa tạo, chưa gửi offer nào
+      requestData: bookingId hợp lệ
+      expectedResult: 200 OK; trả về mảng rỗng []
+    - id: TC-MATCH-009
+      type: businessRule
+      priority: High
+      scenario: Khách hàng (không phải Operator) cố xem lịch sử
+      preconditions: Đăng nhập với role CUSTOMER
+      requestData: bookingId hợp lệ
+      expectedResult: 403 Forbidden (BR-02)
+  - method: GET
+    path: /driver-offers/{offerId}
+    fr: FR05.3
+    description: Chi tiết yêu cầu chuyến gửi cho tài xế
+    allowedRole: Chính tài xế được mời
+    testCases:
+    - id: TC-MATCH-010
+      type: positive
+      priority: High
+      scenario: Tài xế xem chi tiết offer gửi tới mình
+      preconditions: Offer đang ở trạng thái PENDING
+      requestData: offerId hợp lệ
+      expectedResult: 200 OK; trả về DriverOffer gồm estimatedFare, expiresAt
+    - id: TC-MATCH-011
+      type: negative
+      priority: Medium
+      scenario: offerId không tồn tại
+      preconditions: Không có
+      requestData: offerId không hợp lệ
+      expectedResult: 404 Not Found
+    - id: TC-MATCH-012
+      type: businessRule
+      priority: High
+      scenario: Tài xế khác (không được mời) cố xem offer
+      preconditions: Đăng nhập DRIVER không thuộc offer này
+      requestData: offerId của tài xế khác
+      expectedResult: 403 Forbidden (BR-02)
+  - method: POST
+    path: /driver-offers/{offerId}/accept
+    fr: '-'
+    description: Tài xế nhận chuyến
+    allowedRole: Chính tài xế được mời
+    testCases:
+    - id: TC-MATCH-013
+      type: positive
+      priority: High
+      scenario: Tài xế chấp nhận chuyến trong thời hạn cho phép
+      preconditions: Offer đang PENDING, chưa hết hạn expiresAt
+      requestData: offerId hợp lệ
+      expectedResult: 200 OK; tạo Trip mới status=ASSIGNED, thông báo khách hàng
+    - id: TC-MATCH-014
+      type: negative
+      priority: Medium
+      scenario: Chấp nhận offer đã hết hạn
+      preconditions: Thời điểm hiện tại > expiresAt của offer
+      requestData: offerId đã hết hạn
+      expectedResult: 409 Conflict; offer đã hết hạn, không thể nhận
+    - id: TC-MATCH-015
+      type: businessRule
+      priority: High
+      scenario: Chấp nhận offer đã được tài xế khác nhận trước (race condition)
+      preconditions: Offer vừa được một tài xế khác accept thành công
+      requestData: offerId đã bị nhận
+      expectedResult: 409 Conflict; offer đã được xử lý, không thể nhận lại
+    - id: TC-MATCH-016
+      type: additional
+      priority: Medium
+      scenario: Hai tài xế cùng bấm nhận đồng thời cho một offer
+      preconditions: Hai request accept gửi gần như cùng lúc cho cùng offerId
+      requestData: offerId hợp lệ (gửi đồng thời bởi 2 tài xế)
+      expectedResult: Chỉ 1 request nhận 200 OK; request còn lại nhận 409 Conflict (đảm bảo tính nhất
+        quán dữ liệu)
+  - method: POST
+    path: /driver-offers/{offerId}/reject
+    fr: FR05.5
+    description: Tài xế từ chối chuyến
+    allowedRole: Chính tài xế được mời
+    testCases:
+    - id: TC-MATCH-017
+      type: positive
+      priority: High
+      scenario: Tài xế từ chối chuyến hợp lệ
+      preconditions: Offer đang PENDING
+      requestData: '{"reason":"Quá xa điểm đón"}'
+      expectedResult: 200 OK; MatchingState chuyển sang tìm tài xế tiếp theo (BR-06)
+    - id: TC-MATCH-018
+      type: negative
+      priority: Medium
+      scenario: Từ chối một offer đã hết hạn
+      preconditions: Offer đã EXPIRED
+      requestData: '{"reason":"Không kịp"}'
+      expectedResult: 409 Conflict; offer không còn ở trạng thái PENDING
+    - id: TC-MATCH-019
+      type: businessRule
+      priority: High
+      scenario: Tài xế không phản hồi trong thời gian quy định
+      preconditions: Offer PENDING quá thời gian timeout mà không có accept/reject
+      requestData: Không có hành động nào từ tài xế
+      expectedResult: Hệ thống tự chuyển offer sang EXPIRED và tìm tài xế khác (BR-07, thời gian cụ thể
+        cần BA xác nhận)
+  totalTestCases: 19
+- code: TRIP
+  file: fr06-trips.yaml
+  name: 6. Trip Management (FR06)
+  description: Trạng thái và theo dõi chuyến đi (BR-09, BR-10)
+  endpoints:
+  - method: GET
+    path: /trips
+    fr: '-'
+    description: Danh sách chuyến đi
+    allowedRole: Operator, Admin
+    testCases:
+    - id: TC-TRIP-001
+      type: positive
+      priority: High
+      scenario: Lọc danh sách chuyến đi theo trạng thái IN_PROGRESS
+      preconditions: Có nhiều Trip ở các trạng thái khác nhau
+      requestData: status=IN_PROGRESS
+      expectedResult: 200 OK; chỉ trả về Trip có status=IN_PROGRESS
+    - id: TC-TRIP-002
+      type: negative
+      priority: Medium
+      scenario: Lọc theo driverId không tồn tại
+      preconditions: Đã đăng nhập
+      requestData: driverId=00000000-0000-0000-0000-000000000000
+      expectedResult: 200 OK; trả về mảng rỗng []
+    - id: TC-TRIP-003
+      type: businessRule
+      priority: High
+      scenario: Khách hàng (CUSTOMER) cố xem toàn bộ danh sách chuyến
+      preconditions: Đăng nhập với role CUSTOMER
+      requestData: Không có tham số đặc biệt
+      expectedResult: 403 Forbidden (BR-02)
+  - method: GET
+    path: /trips/{tripId}
+    fr: FR06.1
+    description: Chi tiết chuyến đi
+    allowedRole: Khách hàng, tài xế liên quan, Operator
+    testCases:
+    - id: TC-TRIP-004
+      type: positive
+      priority: High
+      scenario: Khách hàng xem chi tiết chuyến của chính mình
+      preconditions: tripId thuộc về khách hàng hiện tại
+      requestData: tripId hợp lệ
+      expectedResult: 200 OK; trả về Trip đầy đủ gồm fare nếu đã tính
+    - id: TC-TRIP-005
+      type: negative
+      priority: Medium
+      scenario: tripId không tồn tại
+      preconditions: Không có
+      requestData: tripId không hợp lệ
+      expectedResult: 404 Not Found
+    - id: TC-TRIP-006
+      type: businessRule
+      priority: High
+      scenario: Người dùng không liên quan cố xem chuyến đi
+      preconditions: Đăng nhập bằng tài khoản không phải khách hàng/tài xế của chuyến
+      requestData: tripId của người khác
+      expectedResult: 403 Forbidden (BR-02)
+  - method: PUT
+    path: /trips/{tripId}/status
+    fr: FR06.2
+    description: Tài xế cập nhật trạng thái chuyến
+    allowedRole: Chính tài xế của chuyến
+    testCases:
+    - id: TC-TRIP-007
+      type: positive
+      priority: High
+      scenario: Cập nhật đúng thứ tự ASSIGNED -> ARRIVING
+      preconditions: Trip đang ở trạng thái ASSIGNED
+      requestData: '{"status":"ARRIVING"}'
+      expectedResult: 200 OK; Trip.status=ARRIVING
+    - id: TC-TRIP-008
+      type: negative
+      priority: Medium
+      scenario: Cập nhật với giá trị status không hợp lệ
+      preconditions: Trip đang ASSIGNED
+      requestData: '{"status":"FLYING"}'
+      expectedResult: 400 Bad Request; giá trị status không thuộc enum TripStatus
+    - id: TC-TRIP-009
+      type: businessRule
+      priority: High
+      scenario: Cập nhật sai thứ tự, bỏ qua trạng thái trung gian
+      preconditions: Trip đang ASSIGNED
+      requestData: '{"status":"COMPLETED"}'
+      expectedResult: 409 Conflict; không thể chuyển thẳng từ ASSIGNED sang COMPLETED (BR-10)
+    - id: TC-TRIP-010
+      type: additional
+      priority: Medium
+      scenario: Cố chuyển ngược từ COMPLETED về IN_PROGRESS
+      preconditions: Trip đã ở trạng thái COMPLETED
+      requestData: '{"status":"IN_PROGRESS"}'
+      expectedResult: 409 Conflict; code=INVALID_STATE_TRANSITION, không được quay lại trạng thái đang
+        thực hiện (BR-10)
+  - method: GET
+    path: /trips/{tripId}/tracking
+    fr: FR06.3
+    description: Theo dõi chuyến đi
+    allowedRole: Khách hàng của chuyến
+    testCases:
+    - id: TC-TRIP-011
+      type: positive
+      priority: High
+      scenario: Theo dõi vị trí tài xế và ETA khi đang ARRIVING
+      preconditions: Trip đang ở trạng thái ARRIVING
+      requestData: tripId hợp lệ
+      expectedResult: 200 OK; trả về driverLocation, etaMinutes cập nhật
+    - id: TC-TRIP-012
+      type: negative
+      priority: Medium
+      scenario: Theo dõi chuyến đã COMPLETED
+      preconditions: Trip đã hoàn thành
+      requestData: tripId hợp lệ
+      expectedResult: 200 OK; status=COMPLETED, driverLocation là vị trí cuối cùng ghi nhận
+    - id: TC-TRIP-013
+      type: businessRule
+      priority: High
+      scenario: tripId không tồn tại
+      preconditions: Không có
+      requestData: tripId không hợp lệ
+      expectedResult: 404 Not Found
+  totalTestCases: 13
+- code: PAY
+  file: fr07-payments.yaml
+  name: 7. Fare & Payment (FR07)
+  description: Tính cước, thanh toán, webhook provider (BR-11 đến BR-14)
+  endpoints:
+  - method: GET
+    path: /trips/{tripId}/fare
+    fr: FR07.1
+    description: Xem cước chuyến đi
+    allowedRole: Khách hàng, tài xế của chuyến
+    testCases:
+    - id: TC-PAY-001
+      type: positive
+      priority: High
+      scenario: Xem cước đã tính của chuyến đã hoàn thành
+      preconditions: Fare đã được tính cho tripId
+      requestData: tripId hợp lệ
+      expectedResult: 200 OK; trả về Fare gồm baseFare, distanceFare, total
+    - id: TC-PAY-002
+      type: negative
+      priority: Medium
+      scenario: Xem cước khi chuyến chưa hoàn thành
+      preconditions: Trip đang IN_PROGRESS, chưa có Fare
+      requestData: tripId hợp lệ
+      expectedResult: 404 Not Found; chưa có dữ liệu Fare cho chuyến này
+    - id: TC-PAY-003
+      type: businessRule
+      priority: High
+      scenario: Người dùng không liên quan xem cước chuyến
+      preconditions: Đăng nhập bằng tài khoản không liên quan chuyến
+      requestData: tripId của người khác
+      expectedResult: 403 Forbidden (BR-02)
+  - method: POST
+    path: /trips/{tripId}/fare
+    fr: FR07.1
+    description: Tính cước sau khi hoàn thành chuyến
+    allowedRole: Hệ thống / Operator
+    testCases:
+    - id: TC-PAY-004
+      type: positive
+      priority: High
+      scenario: Tính cước ngay sau khi Trip chuyển COMPLETED
+      preconditions: Trip vừa chuyển sang trạng thái COMPLETED
+      requestData: tripId hợp lệ
+      expectedResult: 201 Created; Fare.total được tính theo distanceKm và cấu hình cước (BR-11)
+    - id: TC-PAY-005
+      type: negative
+      priority: Medium
+      scenario: Tính cước khi chuyến chưa hoàn thành
+      preconditions: Trip đang IN_PROGRESS
+      requestData: tripId hợp lệ
+      expectedResult: 409 Conflict; chỉ tính cước khi Trip.status=COMPLETED (BR-11)
+    - id: TC-PAY-006
+      type: businessRule
+      priority: High
+      scenario: Tính cước 2 lần cho cùng một chuyến
+      preconditions: Fare đã được tính trước đó cho tripId
+      requestData: tripId đã có Fare
+      expectedResult: 409 Conflict; Fare đã tồn tại, không tính trùng
+  - method: POST
+    path: /payments
+    fr: FR07.2
+    description: Tạo giao dịch thanh toán
+    allowedRole: Khách hàng của chuyến
+    testCases:
+    - id: TC-PAY-007
+      type: positive
+      priority: High
+      scenario: Thanh toán tiền mặt thành công
+      preconditions: Fare đã được tính cho tripId
+      requestData: '{"tripId":"<tripId>","method":"CASH"}'
+      expectedResult: 201 Created; Payment.status=SUCCESS (ghi nhận thanh toán tiền mặt)
+    - id: TC-PAY-008
+      type: negative
+      priority: Medium
+      scenario: Thanh toán điện tử thiếu providerToken
+      preconditions: Fare đã tính, method=E_WALLET
+      requestData: '{"tripId":"<tripId>","method":"E_WALLET"}'
+      expectedResult: 400 Bad Request; providerToken bắt buộc khi method=E_WALLET
+    - id: TC-PAY-009
+      type: businessRule
+      priority: High
+      scenario: Thanh toán cho chuyến chưa có Fare
+      preconditions: Trip chưa được tính cước
+      requestData: '{"tripId":"<tripId>","method":"CASH"}'
+      expectedResult: 409 Conflict; cần tính cước trước khi thanh toán
+    - id: TC-PAY-010
+      type: additional
+      priority: Medium
+      scenario: Payment Provider tạm thời không phản hồi
+      preconditions: Fare đã tính, method=E_WALLET, dịch vụ Payment Provider đang down
+      requestData: '{"tripId":"<tripId>","method":"E_WALLET","providerToken":"tok_123"}'
+      expectedResult: 503 Service Unavailable; lỗi thanh toán không làm sập toàn bộ luồng đặt xe (BR-20)
+  - method: GET
+    path: /payments
+    fr: '-'
+    description: Tra cứu giao dịch thanh toán
+    allowedRole: Operator, chính khách hàng liên quan
+    testCases:
+    - id: TC-PAY-011
+      type: positive
+      priority: High
+      scenario: Tra cứu giao dịch theo tripId
+      preconditions: Có Payment gắn với tripId
+      requestData: tripId=<tripId>
+      expectedResult: 200 OK; trả về danh sách Payment khớp tripId
+    - id: TC-PAY-012
+      type: negative
+      priority: Medium
+      scenario: Tra cứu theo status=FAILED
+      preconditions: Có một số giao dịch FAILED
+      requestData: status=FAILED
+      expectedResult: 200 OK; chỉ trả về Payment có status=FAILED
+    - id: TC-PAY-013
+      type: businessRule
+      priority: High
+      scenario: Không có giao dịch nào khớp điều kiện lọc
+      preconditions: Không có
+      requestData: tripId=00000000-0000-0000-0000-000000000000
+      expectedResult: 200 OK; data=[], meta.totalItems=0
+  - method: GET
+    path: /payments/{paymentId}
+    fr: '-'
+    description: Chi tiết giao dịch
+    allowedRole: Operator, chính khách hàng liên quan
+    testCases:
+    - id: TC-PAY-014
+      type: positive
+      priority: High
+      scenario: Xem chi tiết giao dịch thành công
+      preconditions: paymentId tồn tại
+      requestData: paymentId hợp lệ
+      expectedResult: 200 OK; trả về Payment đầy đủ
+    - id: TC-PAY-015
+      type: negative
+      priority: Medium
+      scenario: paymentId không tồn tại
+      preconditions: Không có
+      requestData: paymentId không hợp lệ
+      expectedResult: 404 Not Found
+    - id: TC-PAY-016
+      type: businessRule
+      priority: High
+      scenario: Khách hàng khác cố xem giao dịch không thuộc về mình
+      preconditions: Đăng nhập tài khoản khác
+      requestData: paymentId của người khác
+      expectedResult: 403 Forbidden (BR-02)
+  - method: POST
+    path: /payments/{paymentId}/retry
+    fr: FR07.4
+    description: Thực hiện lại thanh toán thất bại
+    allowedRole: Chính khách hàng liên quan
+    testCases:
+    - id: TC-PAY-017
+      type: positive
+      priority: High
+      scenario: Thanh toán lại thành công sau lần thất bại đầu tiên
+      preconditions: Payment trước đó ở trạng thái FAILED
+      requestData: paymentId hợp lệ
+      expectedResult: 200 OK; tạo giao dịch mới status=SUCCESS (BR-14)
+    - id: TC-PAY-018
+      type: negative
+      priority: Medium
+      scenario: Thử thanh toán lại cho giao dịch đã SUCCESS
+      preconditions: Payment đã ở trạng thái SUCCESS
+      requestData: paymentId đã thành công
+      expectedResult: 409 Conflict; giao dịch đã thành công, không cần thử lại
+    - id: TC-PAY-019
+      type: businessRule
+      priority: High
+      scenario: Payment Provider tiếp tục lỗi khi thử lại
+      preconditions: Payment FAILED, provider vẫn đang gặp sự cố
+      requestData: paymentId hợp lệ
+      expectedResult: 503 Service Unavailable; thông báo khách hàng thử lại sau (BR-20)
+  - method: POST
+    path: /payments/webhooks/provider
+    fr: '-'
+    description: Webhook kết quả thanh toán từ Payment Provider
+    allowedRole: Payment Provider (chữ ký HMAC)
+    testCases:
+    - id: TC-PAY-020
+      type: positive
+      priority: High
+      scenario: Nhận webhook SUCCESS hợp lệ từ provider
+      preconditions: Có giao dịch PENDING chờ xác nhận, chữ ký hợp lệ
+      requestData: '{"providerTransactionId":"PTX001","paymentId":"<paymentId>","status":"SUCCESS"}'
+      expectedResult: 204 No Content; Payment cập nhật sang SUCCESS
+    - id: TC-PAY-021
+      type: negative
+      priority: Medium
+      scenario: Webhook thiếu chữ ký HMAC hợp lệ
+      preconditions: Request không có header X-Provider-Signature đúng
+      requestData: '{"providerTransactionId":"PTX002","paymentId":"<paymentId>","status":"FAILED"}'
+      expectedResult: 401 Unauthorized; từ chối xử lý webhook không xác thực được nguồn gốc
+    - id: TC-PAY-022
+      type: businessRule
+      priority: High
+      scenario: Webhook báo trạng thái FAILED
+      preconditions: Chữ ký hợp lệ
+      requestData: '{"providerTransactionId":"PTX003","paymentId":"<paymentId>","status":"FAILED"}'
+      expectedResult: 204 No Content; Payment cập nhật FAILED, hệ thống thông báo khách hàng (BR-14)
+    - id: TC-PAY-023
+      type: additional
+      priority: Medium
+      scenario: Webhook trả trạng thái không xác định (UNKNOWN)
+      preconditions: Chữ ký hợp lệ, provider trả kết quả mập mờ
+      requestData: '{"providerTransactionId":"PTX004","paymentId":"<paymentId>","status":"UNKNOWN"}'
+      expectedResult: 204 No Content; Payment giữ trạng thái chờ đối soát thủ công (BR-29, quy trình cụ
+        thể cần BA xác nhận)
+  totalTestCases: 23
+- code: NOTI
+  file: fr08-notifications.yaml
+  name: 8. Notifications (FR08)
+  description: Thông báo và kênh thông báo (BR-15)
+  endpoints:
+  - method: GET
+    path: /notifications
+    fr: FR08.1
+    description: Danh sách thông báo của người dùng
+    allowedRole: Người dùng đã đăng nhập
+    testCases:
+    - id: TC-NOTI-001
+      type: positive
+      priority: High
+      scenario: Xem danh sách thông báo chưa đọc
+      preconditions: Người dùng có thông báo chưa đọc và đã đọc
+      requestData: read=false
+      expectedResult: 200 OK; chỉ trả về Notification có read=false
+    - id: TC-NOTI-002
+      type: negative
+      priority: Medium
+      scenario: Xem danh sách thông báo có phân trang
+      preconditions: Người dùng có 45 thông báo
+      requestData: page=2&size=20
+      expectedResult: 200 OK; trả về 20 bản ghi trang 2, meta.totalItems=45
+    - id: TC-NOTI-003
+      type: businessRule
+      priority: High
+      scenario: Người dùng chưa từng nhận thông báo nào
+      preconditions: Tài khoản mới tạo
+      requestData: page=1&size=20
+      expectedResult: 200 OK; data=[], meta.totalItems=0
+  - method: POST
+    path: /notifications/{notificationId}/read
+    fr: '-'
+    description: Đánh dấu đã đọc
+    allowedRole: Chính người nhận thông báo
+    testCases:
+    - id: TC-NOTI-004
+      type: positive
+      priority: High
+      scenario: Đánh dấu một thông báo là đã đọc
+      preconditions: Notification đang read=false
+      requestData: notificationId hợp lệ
+      expectedResult: 204 No Content; Notification.read chuyển sang true
+    - id: TC-NOTI-005
+      type: negative
+      priority: Medium
+      scenario: Đánh dấu notificationId không tồn tại
+      preconditions: Không có
+      requestData: notificationId không hợp lệ
+      expectedResult: 404 Not Found
+    - id: TC-NOTI-006
+      type: businessRule
+      priority: High
+      scenario: Người dùng khác cố đánh dấu thông báo không thuộc về mình
+      preconditions: Đăng nhập tài khoản khác
+      requestData: notificationId của người khác
+      expectedResult: 403 Forbidden (BR-02)
+  - method: GET
+    path: /notification-channels
+    fr: FR08.3
+    description: Danh sách kênh thông báo đang sử dụng
+    allowedRole: Người dùng đã đăng nhập
+    testCases:
+    - id: TC-NOTI-007
+      type: positive
+      priority: High
+      scenario: Lấy danh sách kênh thông báo khả dụng trong MVP
+      preconditions: Hệ thống cấu hình kênh PUSH cho MVP
+      requestData: Không có tham số
+      expectedResult: 200 OK; trả về mảng gồm ít nhất kênh PUSH (BR-30, số kênh cụ thể cần BA xác nhận)
+    - id: TC-NOTI-008
+      type: negative
+      priority: Medium
+      scenario: Gọi endpoint khi chưa đăng nhập
+      preconditions: Không gửi Authorization header
+      requestData: Không có Authorization header
+      expectedResult: 401 Unauthorized
+    - id: TC-NOTI-009
+      type: businessRule
+      priority: High
+      scenario: Kiểm tra kênh trả về đúng định dạng enum
+      preconditions: Đã đăng nhập
+      requestData: Không có tham số
+      expectedResult: 200 OK; mỗi phần tử thuộc enum [PUSH, SMS, EMAIL, IN_APP]
+  totalTestCases: 9
+- code: RATE
+  file: fr09-ratings.yaml
+  name: 9. Ratings (FR09)
+  description: Đánh giá tài xế sau chuyến (BR-16)
+  endpoints:
+  - method: POST
+    path: /trips/{tripId}/rating
+    fr: FR09.1
+    description: Đánh giá tài xế sau chuyến đi
+    allowedRole: Chính khách hàng của chuyến
+    testCases:
+    - id: TC-RATE-001
+      type: positive
+      priority: High
+      scenario: Đánh giá 5 sao kèm bình luận sau khi hoàn thành chuyến
+      preconditions: Trip đã ở trạng thái COMPLETED, chưa được đánh giá
+      requestData: '{"score":5,"comment":"Tài xế thân thiện, đúng giờ"}'
+      expectedResult: 201 Created; Rating được lưu và cập nhật averageRating của tài xế (BR-16)
+    - id: TC-RATE-002
+      type: negative
+      priority: Medium
+      scenario: Đánh giá với score ngoài khoảng 1-5
+      preconditions: Trip đã COMPLETED
+      requestData: '{"score":7}'
+      expectedResult: 400 Bad Request; score phải trong khoảng 1..5
+    - id: TC-RATE-003
+      type: businessRule
+      priority: High
+      scenario: Đánh giá khi chuyến chưa hoàn thành
+      preconditions: Trip đang IN_PROGRESS
+      requestData: '{"score":5}'
+      expectedResult: 409 Conflict; chỉ được đánh giá sau khi chuyến COMPLETED (BR-16)
+    - id: TC-RATE-004
+      type: additional
+      priority: Medium
+      scenario: Đánh giá lần thứ hai cho cùng một chuyến
+      preconditions: Chuyến đã được đánh giá trước đó
+      requestData: '{"score":4}'
+      expectedResult: 409 Conflict; chuyến đã có đánh giá, không cho phép đánh giá lại
+  - method: GET
+    path: /trips/{tripId}/rating
+    fr: '-'
+    description: Xem đánh giá của một chuyến đi
+    allowedRole: Khách hàng, tài xế của chuyến, Operator
+    testCases:
+    - id: TC-RATE-005
+      type: positive
+      priority: High
+      scenario: Xem đánh giá đã có của chuyến đi
+      preconditions: Chuyến đã được đánh giá
+      requestData: tripId hợp lệ
+      expectedResult: 200 OK; trả về Rating với score, comment
+    - id: TC-RATE-006
+      type: negative
+      priority: Medium
+      scenario: Xem đánh giá của chuyến chưa được đánh giá
+      preconditions: Chuyến COMPLETED nhưng chưa có Rating
+      requestData: tripId hợp lệ
+      expectedResult: 404 Not Found
+    - id: TC-RATE-007
+      type: businessRule
+      priority: High
+      scenario: tripId không tồn tại
+      preconditions: Không có
+      requestData: tripId không hợp lệ
+      expectedResult: 404 Not Found
+  - method: GET
+    path: /drivers/{driverId}/ratings
+    fr: FR09.2
+    description: Xem đánh giá của tài xế
+    allowedRole: Chính tài xế đó, Operator, công khai rút gọn
+    testCases:
+    - id: TC-RATE-008
+      type: positive
+      priority: High
+      scenario: Xem danh sách đánh giá và điểm trung bình của tài xế
+      preconditions: Tài xế có 12 đánh giá
+      requestData: page=1&size=20
+      expectedResult: 200 OK; trả về averageRating và danh sách Rating
+    - id: TC-RATE-009
+      type: negative
+      priority: Medium
+      scenario: Tài xế chưa có đánh giá nào
+      preconditions: Tài xế mới, chưa hoàn thành chuyến nào
+      requestData: driverId hợp lệ
+      expectedResult: 200 OK; averageRating=null hoặc 0, data=[]
+    - id: TC-RATE-010
+      type: businessRule
+      priority: High
+      scenario: driverId không tồn tại
+      preconditions: Không có
+      requestData: driverId không hợp lệ
+      expectedResult: 404 Not Found
+  totalTestCases: 10
+- code: OPS
+  file: fr10-operations.yaml
+  name: 10. Operations (FR10)
+  description: Quản lý vận hành và xử lý sự cố (BR-09)
+  endpoints:
+  - method: GET
+    path: /operations/customers
+    fr: FR10.1
+    description: Nhân viên vận hành tra cứu khách hàng
+    allowedRole: Operator, Admin
+    testCases:
+    - id: TC-OPS-001
+      type: positive
+      priority: High
+      scenario: Tìm khách hàng theo số điện thoại
+      preconditions: Có khách hàng với số điện thoại tương ứng
+      requestData: keyword=0912345678
+      expectedResult: 200 OK; trả về danh sách khách hàng khớp keyword
+    - id: TC-OPS-002
+      type: negative
+      priority: Medium
+      scenario: Tìm với keyword không khớp bản ghi nào
+      preconditions: Không có
+      requestData: keyword=0000000000
+      expectedResult: 200 OK; data=[], meta.totalItems=0
+    - id: TC-OPS-003
+      type: businessRule
+      priority: High
+      scenario: Khách hàng (CUSTOMER) cố truy cập chức năng tra cứu nội bộ
+      preconditions: Đăng nhập với role CUSTOMER
+      requestData: keyword=test
+      expectedResult: 403 Forbidden (BR-02)
+  - method: GET
+    path: /operations/drivers
+    fr: FR10.2
+    description: Tra cứu và giám sát tài xế
+    allowedRole: Operator, Admin
+    testCases:
+    - id: TC-OPS-004
+      type: positive
+      priority: High
+      scenario: Giám sát danh sách tài xế đang BUSY
+      preconditions: Có tài xế ở trạng thái BUSY
+      requestData: status=BUSY
+      expectedResult: 200 OK; chỉ trả về tài xế BUSY để theo dõi chuyến đang chạy
+    - id: TC-OPS-005
+      type: negative
+      priority: Medium
+      scenario: Truyền status không hợp lệ
+      preconditions: Đã đăng nhập OPERATOR
+      requestData: status=RUNNING
+      expectedResult: 400 Bad Request; status không thuộc enum DriverStatus
+    - id: TC-OPS-006
+      type: businessRule
+      priority: High
+      scenario: Không có tài xế nào đang OFFLINE
+      preconditions: Toàn bộ tài xế đang AVAILABLE hoặc BUSY
+      requestData: status=OFFLINE
+      expectedResult: 200 OK; data=[]
+  - method: GET
+    path: /operations/vehicles
+    fr: FR10.3
+    description: Quản lý phương tiện
+    allowedRole: Operator, Admin
+    testCases:
+    - id: TC-OPS-007
+      type: positive
+      priority: High
+      scenario: Xem danh sách toàn bộ phương tiện có phân trang
+      preconditions: Có 50 phương tiện trong hệ thống
+      requestData: page=1&size=20
+      expectedResult: 200 OK; trả về 20 Vehicle, meta.totalItems=50
+    - id: TC-OPS-008
+      type: negative
+      priority: Medium
+      scenario: Trang vượt quá tổng số trang hiện có
+      preconditions: Tổng chỉ có 3 trang dữ liệu
+      requestData: page=10&size=20
+      expectedResult: 200 OK; data=[] (trang không có dữ liệu)
+    - id: TC-OPS-009
+      type: businessRule
+      priority: High
+      scenario: Tài xế (DRIVER) cố truy cập danh sách toàn bộ phương tiện
+      preconditions: Đăng nhập với role DRIVER
+      requestData: Không có tham số đặc biệt
+      expectedResult: 403 Forbidden (BR-02)
+  - method: GET
+    path: /operations/trips
+    fr: FR10.4
+    description: Theo dõi chuyến đang diễn ra
+    allowedRole: Operator, Admin
+    testCases:
+    - id: TC-OPS-010
+      type: positive
+      priority: High
+      scenario: Theo dõi các chuyến đang IN_PROGRESS trong ngày
+      preconditions: Có nhiều chuyến ở nhiều trạng thái
+      requestData: status=IN_PROGRESS&from=2026-09-21T00:00:00Z&to=2026-09-21T23:59:59Z
+      expectedResult: 200 OK; chỉ trả về Trip IN_PROGRESS trong khoảng thời gian
+    - id: TC-OPS-011
+      type: negative
+      priority: Medium
+      scenario: Khoảng thời gian from lớn hơn to
+      preconditions: Đã đăng nhập OPERATOR
+      requestData: from=2026-09-22T00:00:00Z&to=2026-09-21T00:00:00Z
+      expectedResult: 400 Bad Request; khoảng thời gian không hợp lệ
+    - id: TC-OPS-012
+      type: businessRule
+      priority: High
+      scenario: Không có chuyến nào đang diễn ra
+      preconditions: Tất cả chuyến đã COMPLETED hoặc CANCELLED
+      requestData: status=IN_PROGRESS
+      expectedResult: 200 OK; data=[]
+  - method: GET
+    path: /operations/incidents
+    fr: FR10.5
+    description: Danh sách sự cố
+    allowedRole: Operator, Admin
+    testCases:
+    - id: TC-OPS-013
+      type: positive
+      priority: High
+      scenario: Xem danh sách sự cố đang OPEN
+      preconditions: Có sự cố ở nhiều trạng thái
+      requestData: status=OPEN
+      expectedResult: 200 OK; chỉ trả về Incident có status=OPEN
+    - id: TC-OPS-014
+      type: negative
+      priority: Medium
+      scenario: Truyền status không hợp lệ
+      preconditions: Đã đăng nhập
+      requestData: status=CLOSED_WRONG
+      expectedResult: 400 Bad Request; status không thuộc enum
+    - id: TC-OPS-015
+      type: businessRule
+      priority: High
+      scenario: Chưa có sự cố nào được ghi nhận
+      preconditions: Hệ thống vận hành ổn định
+      requestData: Không có tham số
+      expectedResult: 200 OK; data=[]
+  - method: POST
+    path: /operations/incidents
+    fr: FR10.5
+    description: Ghi nhận sự cố
+    allowedRole: Operator
+    testCases:
+    - id: TC-OPS-016
+      type: positive
+      priority: High
+      scenario: Ghi nhận sự cố chuyến bị kẹt (TRIP_STUCK)
+      preconditions: Trip đang IN_PROGRESS quá lâu không cập nhật trạng thái
+      requestData: '{"tripId":"<tripId>","type":"TRIP_STUCK","description":"Tài xế không cập nhật trạng
+        thái sau 20 phút"}'
+      expectedResult: 201 Created; Incident.status=OPEN
+    - id: TC-OPS-017
+      type: negative
+      priority: Medium
+      scenario: Ghi nhận sự cố thiếu mô tả
+      preconditions: Không có
+      requestData: '{"tripId":"<tripId>","type":"PAYMENT_ISSUE"}'
+      expectedResult: 400 Bad Request; field description bắt buộc
+    - id: TC-OPS-018
+      type: businessRule
+      priority: High
+      scenario: Ghi nhận sự cố với tripId không tồn tại
+      preconditions: Không có
+      requestData: '{"tripId":"00000000-0000-0000-0000-000000000000","type":"OTHER","description":"test"}'
+      expectedResult: 404 Not Found; tripId không tồn tại
+  - method: PATCH
+    path: /operations/incidents/{incidentId}
+    fr: FR10.5
+    description: Cập nhật xử lý sự cố
+    allowedRole: Operator
+    testCases:
+    - id: TC-OPS-019
+      type: positive
+      priority: High
+      scenario: Cập nhật sự cố sang RESOLVED kèm hướng xử lý
+      preconditions: Incident đang ở trạng thái IN_PROGRESS
+      requestData: '{"status":"RESOLVED","resolution":"Đã liên hệ tài xế và cập nhật lại trạng thái chuyến"}'
+      expectedResult: 200 OK; Incident.status=RESOLVED, handledBy=operatorId
+    - id: TC-OPS-020
+      type: negative
+      priority: Medium
+      scenario: Cập nhật với status không hợp lệ
+      preconditions: Đã đăng nhập OPERATOR
+      requestData: '{"status":"DONE"}'
+      expectedResult: 400 Bad Request; status không thuộc enum
+    - id: TC-OPS-021
+      type: businessRule
+      priority: High
+      scenario: incidentId không tồn tại
+      preconditions: Không có
+      requestData: '{"status":"RESOLVED"}'
+      expectedResult: 404 Not Found
+  totalTestCases: 21
+- code: REPT
+  file: fr11-reports.yaml
+  name: 11. Reports (FR11)
+  description: Báo cáo chuyến đi, doanh thu, hiệu quả tài xế
+  endpoints:
+  - method: GET
+    path: /reports/trips
+    fr: FR11.1
+    description: Báo cáo chuyến đi
+    allowedRole: Operator, Admin, Ban giám đốc
+    testCases:
+    - id: TC-REPT-001
+      type: positive
+      priority: High
+      scenario: Xem báo cáo chuyến đi trong tháng 9/2026
+      preconditions: Có dữ liệu chuyến đi trong khoảng thời gian
+      requestData: from=2026-09-01T00:00:00Z&to=2026-09-30T23:59:59Z
+      expectedResult: 200 OK; trả về totalTrips, completionRate, cancellationRate
+    - id: TC-REPT-002
+      type: negative
+      priority: Medium
+      scenario: Thiếu tham số from/to bắt buộc
+      preconditions: Đã đăng nhập OPERATOR
+      requestData: Không truyền from, to
+      expectedResult: 200 OK hoặc 400 tùy quy ước; nếu bắt buộc thì trả 400 Bad Request thiếu tham số
+    - id: TC-REPT-003
+      type: businessRule
+      priority: High
+      scenario: Khoảng thời gian không có dữ liệu chuyến đi
+      preconditions: Không có Trip nào trong khoảng lọc
+      requestData: from=2020-01-01T00:00:00Z&to=2020-01-31T23:59:59Z
+      expectedResult: 200 OK; totalTrips=0, completionRate=0
+  - method: GET
+    path: /reports/revenue
+    fr: FR11.2
+    description: Báo cáo doanh thu
+    allowedRole: Operator, Admin, Ban giám đốc
+    testCases:
+    - id: TC-REPT-004
+      type: positive
+      priority: High
+      scenario: Xem doanh thu theo phương thức thanh toán trong kỳ
+      preconditions: Có giao dịch CASH và E_WALLET thành công trong kỳ
+      requestData: from=2026-09-01T00:00:00Z&to=2026-09-30T23:59:59Z
+      expectedResult: 200 OK; totalRevenue và byPaymentMethod khớp tổng các giao dịch SUCCESS
+    - id: TC-REPT-005
+      type: negative
+      priority: Medium
+      scenario: Chỉ có giao dịch tiền mặt trong kỳ
+      preconditions: Không có giao dịch E_WALLET nào
+      requestData: from=2026-09-01T00:00:00Z&to=2026-09-30T23:59:59Z
+      expectedResult: 200 OK; byPaymentMethod chỉ liệt kê CASH
+    - id: TC-REPT-006
+      type: businessRule
+      priority: High
+      scenario: Nhân viên vận hành không có quyền báo cáo doanh thu
+      preconditions: Vai trò OPERATOR không được cấp quyền revenue.read
+      requestData: from=2026-09-01T00:00:00Z&to=2026-09-30T23:59:59Z
+      expectedResult: 403 Forbidden (BR-02, tùy cấu hình phân quyền)
+  - method: GET
+    path: /reports/drivers
+    fr: FR11.3
+    description: Báo cáo hiệu quả tài xế
+    allowedRole: Operator, Admin
+    testCases:
+    - id: TC-REPT-007
+      type: positive
+      priority: High
+      scenario: Xem báo cáo hiệu quả tài xế có phân trang
+      preconditions: Có dữ liệu completedTrips, rejectedOffers cho nhiều tài xế
+      requestData: from=2026-09-01T00:00:00Z&to=2026-09-30T23:59:59Z&page=1&size=20
+      expectedResult: 200 OK; items chứa completedTrips, rejectedOffers, averageRating từng tài xế
+    - id: TC-REPT-008
+      type: negative
+      priority: Medium
+      scenario: Không có tài xế nào hoạt động trong kỳ báo cáo
+      preconditions: Không có Trip nào trong khoảng lọc
+      requestData: from=2020-01-01T00:00:00Z&to=2020-01-31T23:59:59Z
+      expectedResult: 200 OK; items=[]
+    - id: TC-REPT-009
+      type: businessRule
+      priority: High
+      scenario: Khoảng thời gian from/to không hợp lệ (from > to)
+      preconditions: Đã đăng nhập OPERATOR
+      requestData: from=2026-09-30T00:00:00Z&to=2026-09-01T00:00:00Z
+      expectedResult: 400 Bad Request; khoảng thời gian không hợp lệ
+  totalTestCases: 9
+- code: SEC
+  file: fr12-security.yaml
+  name: 12. Security (FR12)
+  description: Phân quyền, vai trò, audit log (BR-02, BR-19)
+  endpoints:
+  - method: GET
+    path: /roles
+    fr: FR12.1
+    description: Danh sách vai trò và quyền
+    allowedRole: Admin
+    testCases:
+    - id: TC-SEC-001
+      type: positive
+      priority: High
+      scenario: Admin xem danh sách vai trò hệ thống
+      preconditions: Hệ thống có các Role CUSTOMER, DRIVER, OPERATOR, ADMIN
+      requestData: Không có tham số
+      expectedResult: 200 OK; trả về mảng Role kèm permissions
+    - id: TC-SEC-002
+      type: negative
+      priority: Medium
+      scenario: Operator (không phải Admin) cố xem danh sách vai trò
+      preconditions: Đăng nhập với role OPERATOR
+      requestData: Không có tham số
+      expectedResult: 403 Forbidden (BR-02, chỉ Admin quản lý vai trò)
+    - id: TC-SEC-003
+      type: businessRule
+      priority: High
+      scenario: Gọi endpoint khi chưa đăng nhập
+      preconditions: Không gửi Authorization header
+      requestData: Không có Authorization header
+      expectedResult: 401 Unauthorized
+  - method: PUT
+    path: /users/{userId}/roles
+    fr: FR12.2
+    description: Gán vai trò cho người dùng
+    allowedRole: Admin
+    testCases:
+    - id: TC-SEC-004
+      type: positive
+      priority: High
+      scenario: Admin gán vai trò OPERATOR cho nhân viên mới
+      preconditions: userId là tài khoản nhân viên hợp lệ
+      requestData: '{"roleCodes":["OPERATOR"]}'
+      expectedResult: 200 OK; User.role cập nhật, thao tác được ghi vào Audit Log (BR-19)
+    - id: TC-SEC-005
+      type: negative
+      priority: Medium
+      scenario: Gán vai trò không tồn tại trong hệ thống
+      preconditions: Đã đăng nhập ADMIN
+      requestData: '{"roleCodes":["SUPERHERO"]}'
+      expectedResult: 400 Bad Request; roleCodes chứa giá trị không hợp lệ
+    - id: TC-SEC-006
+      type: businessRule
+      priority: High
+      scenario: Operator (không phải Admin) cố gán vai trò
+      preconditions: Đăng nhập với role OPERATOR
+      requestData: '{"roleCodes":["ADMIN"]}'
+      expectedResult: 403 Forbidden (BR-02, BR-10)
+  - method: GET
+    path: /audit-logs
+    fr: FR12.3
+    description: Tra cứu Audit Log
+    allowedRole: Admin
+    testCases:
+    - id: TC-SEC-007
+      type: positive
+      priority: High
+      scenario: Tra cứu log theo actorId và khoảng thời gian
+      preconditions: Có log thao tác ROLE_ASSIGNED trong khoảng thời gian
+      requestData: actorId=<adminId>&from=2026-09-01T00:00:00Z&to=2026-09-30T23:59:59Z
+      expectedResult: 200 OK; trả về danh sách AuditLog khớp điều kiện (BR-19)
+    - id: TC-SEC-008
+      type: negative
+      priority: Medium
+      scenario: Tra cứu log theo action không tồn tại
+      preconditions: Không có
+      requestData: action=NON_EXISTENT_ACTION
+      expectedResult: 200 OK; data=[], meta.totalItems=0
+    - id: TC-SEC-009
+      type: businessRule
+      priority: High
+      scenario: Người dùng không phải Admin cố truy cập Audit Log
+      preconditions: Đăng nhập với role OPERATOR
+      requestData: Không có tham số đặc biệt
+      expectedResult: 403 Forbidden (BR-02, BR-19)
+  totalTestCases: 9
+- code: LOC
+  file: fr13-locations.yaml
+  name: 13. Locations (FR13)
+  description: Vị trí tài xế, tìm tài xế gần, ETA (BR-05, BR-17)
+  endpoints:
+  - method: PUT
+    path: /drivers/{driverId}/location
+    fr: FR13.1
+    description: Tài xế cập nhật vị trí
+    allowedRole: Chính tài xế đó
+    testCases:
+    - id: TC-LOC-001
+      type: positive
+      priority: High
+      scenario: Cập nhật vị trí GPS định kỳ khi đang Online
+      preconditions: Tài xế đang AVAILABLE hoặc BUSY
+      requestData: '{"location":{"latitude":10.7769,"longitude":106.7009},"heading":90}'
+      expectedResult: 204 No Content; vị trí mới được lưu để phục vụ FR05 và ETA (BR-17)
+    - id: TC-LOC-002
+      type: negative
+      priority: Medium
+      scenario: Cập nhật vị trí thiếu tọa độ
+      preconditions: Đã đăng nhập DRIVER
+      requestData: '{"heading":90}'
+      expectedResult: 400 Bad Request; field location bắt buộc
+    - id: TC-LOC-003
+      type: businessRule
+      priority: High
+      scenario: Tài xế khác cố cập nhật vị trí thay cho tài xế khác
+      preconditions: Đăng nhập DRIVER A, driverId trong path là của DRIVER B
+      requestData: '{"location":{"latitude":10.77,"longitude":106.70}}'
+      expectedResult: 403 Forbidden (BR-02)
+  - method: GET
+    path: /drivers/{driverId}/location
+    fr: '-'
+    description: Xem vị trí hiện tại của tài xế
+    allowedRole: Chính tài xế đó, Operator, khách hàng của chuyến đang chạy
+    testCases:
+    - id: TC-LOC-004
+      type: positive
+      priority: High
+      scenario: Operator xem vị trí hiện tại của tài xế để giám sát
+      preconditions: Tài xế đã cập nhật vị trí gần nhất
+      requestData: driverId hợp lệ
+      expectedResult: 200 OK; trả về Location mới nhất
+    - id: TC-LOC-005
+      type: negative
+      priority: Medium
+      scenario: Tài xế chưa từng gửi vị trí nào
+      preconditions: Tài xế mới, chưa online lần nào
+      requestData: driverId hợp lệ
+      expectedResult: 404 Not Found; chưa có dữ liệu vị trí
+    - id: TC-LOC-006
+      type: businessRule
+      priority: High
+      scenario: driverId không tồn tại
+      preconditions: Không có
+      requestData: driverId không hợp lệ
+      expectedResult: 404 Not Found
+  - method: GET
+    path: /drivers/nearby
+    fr: FR13.2
+    description: Tìm tài xế gần khách hàng
+    allowedRole: Hệ thống / Operator
+    testCases:
+    - id: TC-LOC-007
+      type: positive
+      priority: High
+      scenario: Tìm tài xế AVAILABLE trong bán kính 3km
+      preconditions: Có tài xế AVAILABLE trong bán kính chỉ định
+      requestData: latitude=10.7626&longitude=106.6602&radiusKm=3&vehicleTypeCode=CAB_4
+      expectedResult: 200 OK; trả về danh sách NearbyDriver sắp xếp theo distanceKm tăng dần
+    - id: TC-LOC-008
+      type: negative
+      priority: Medium
+      scenario: Thiếu tham số latitude bắt buộc
+      preconditions: Không có
+      requestData: longitude=106.6602&radiusKm=3
+      expectedResult: 400 Bad Request; field latitude bắt buộc
+    - id: TC-LOC-009
+      type: businessRule
+      priority: High
+      scenario: Dịch vụ bản đồ/GPS bên ngoài không khả dụng
+      preconditions: Map & GPS Provider đang gặp sự cố
+      requestData: latitude=10.7626&longitude=106.6602
+      expectedResult: 503 Service Unavailable; không ảnh hưởng các chức năng khác của hệ thống (BR-20)
+    - id: TC-LOC-010
+      type: additional
+      priority: Medium
+      scenario: Không có tài xế phù hợp nào trong bán kính tìm kiếm
+      preconditions: Toàn bộ tài xế trong khu vực đang BUSY hoặc OFFLINE
+      requestData: latitude=10.7626&longitude=106.6602&radiusKm=3
+      expectedResult: 200 OK; trả về mảng rỗng [] để hệ thống tiếp tục mở rộng bán kính hoặc báo NO_DRIVER
+        (BR-08)
+  - method: GET
+    path: /eta
+    fr: FR13.3
+    description: Hỗ trợ dự kiến thời gian đến (ETA)
+    allowedRole: Người dùng đã đăng nhập
+    testCases:
+    - id: TC-LOC-011
+      type: positive
+      priority: High
+      scenario: Tính ETA giữa hai tọa độ hợp lệ
+      preconditions: Map Provider hoạt động bình thường
+      requestData: fromLat=10.7626&fromLng=106.6602&toLat=10.7769&toLng=106.7009
+      expectedResult: 200 OK; trả về distanceKm, durationMinutes, source=MAP_PROVIDER
+    - id: TC-LOC-012
+      type: negative
+      priority: Medium
+      scenario: Thiếu tọa độ đích (toLat/toLng)
+      preconditions: Không có
+      requestData: fromLat=10.7626&fromLng=106.6602
+      expectedResult: 400 Bad Request; field toLat, toLng bắt buộc
+    - id: TC-LOC-013
+      type: businessRule
+      priority: High
+      scenario: Map & GPS Provider không phản hồi
+      preconditions: Dịch vụ bên ngoài đang gián đoạn
+      requestData: fromLat=10.7626&fromLng=106.6602&toLat=10.7769&toLng=106.7009
+      expectedResult: 503 Service Unavailable (BR-20)
+  totalTestCases: 13
