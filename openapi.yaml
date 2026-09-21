@@ -1,0 +1,197 @@
+# =============================================================
+# CAB System - API Documentation (OpenAPI 3.0.3)
+# Do an: 23638831_BuiThiDiemMy_cabsystem
+# File goc - tham chieu den cac file nho trong ./paths va ./components
+#
+# Bundle:   npx @redocly/cli bundle openapi.yaml -o cab-system.yaml
+# Lint:     npx @redocly/cli lint openapi.yaml
+# Preview:  npx @redocly/cli preview-docs openapi.yaml
+# =============================================================
+openapi: 3.0.3
+
+info:
+  title: CAB System API
+  version: 1.0.0-mvp
+  description: |
+    API cua he thong dat xe **CAB System**.
+
+    Tai lieu nay duoc xay dung tu tai lieu phan tich nghiep vu (README):
+    Business Requirements (BR01-BR14) va Functional Requirements (FR01-FR13).
+
+    Moi nhom chuc nang (FR) duoc tach thanh mot file YAML rieng trong thu muc `paths/`.
+  contact:
+    name: Bui Thi Diem My - 23638831
+  license:
+    name: Academic use
+
+servers:
+  - url: https://api.cab-system.local/v1
+    description: Production
+  - url: https://staging.api.cab-system.local/v1
+    description: Staging
+  - url: http://localhost:8080/v1
+    description: Local development
+
+tags:
+  - name: Auth
+    description: FR01 - Dang ky, dang nhap, xac thuc
+  - name: Customers
+    description: FR02 - Quan ly khach hang va lich su chuyen di
+  - name: Drivers
+    description: FR03 - Quan ly tai xe, phuong tien, trang thai san sang
+  - name: Bookings
+    description: FR04 - Dat xe
+  - name: Matching
+    description: FR05 - Tim va phan cong tai xe
+  - name: Trips
+    description: FR06 - Quan ly chuyen di
+  - name: Payments
+    description: FR07 - Tinh cuoc va thanh toan
+  - name: Notifications
+    description: FR08 - Thong bao
+  - name: Ratings
+    description: FR09 - Danh gia tai xe
+  - name: Operations
+    description: FR10 - Quan ly van hanh
+  - name: Reports
+    description: FR11 - Bao cao
+  - name: Security
+    description: FR12 - Phan quyen, kiem soat truy cap, audit log
+  - name: Locations
+    description: FR13 - Quan ly vi tri va ETA
+
+security:
+  - bearerAuth: []
+
+paths:
+  # ---------- FR01 - Auth & Account ----------
+  /auth/register:
+    $ref: './paths/fr01-auth.yaml#/register'
+  /auth/login:
+    $ref: './paths/fr01-auth.yaml#/login'
+  /auth/refresh:
+    $ref: './paths/fr01-auth.yaml#/refresh'
+  /auth/logout:
+    $ref: './paths/fr01-auth.yaml#/logout'
+  /auth/me:
+    $ref: './paths/fr01-auth.yaml#/me'
+
+  # ---------- FR02 - Customers ----------
+  /customers/{customerId}:
+    $ref: './paths/fr02-customers.yaml#/customerById'
+  /customers/{customerId}/trips:
+    $ref: './paths/fr02-customers.yaml#/customerTrips'
+
+  # ---------- FR03 - Drivers & Vehicles ----------
+  /drivers:
+    $ref: './paths/fr03-drivers.yaml#/drivers'
+  /drivers/{driverId}:
+    $ref: './paths/fr03-drivers.yaml#/driverById'
+  /drivers/{driverId}/availability:
+    $ref: './paths/fr03-drivers.yaml#/driverAvailability'
+  /drivers/{driverId}/vehicles:
+    $ref: './paths/fr03-drivers.yaml#/driverVehicles'
+  /vehicles/{vehicleId}:
+    $ref: './paths/fr03-drivers.yaml#/vehicleById'
+
+  # ---------- FR04 - Bookings ----------
+  /bookings:
+    $ref: './paths/fr04-bookings.yaml#/bookings'
+  /bookings/{bookingId}:
+    $ref: './paths/fr04-bookings.yaml#/bookingById'
+  /bookings/{bookingId}/cancel:
+    $ref: './paths/fr04-bookings.yaml#/cancelBooking'
+  /bookings/{bookingId}/status:
+    $ref: './paths/fr04-bookings.yaml#/bookingStatus'
+  /vehicle-types:
+    $ref: './paths/fr04-bookings.yaml#/vehicleTypes'
+
+  # ---------- FR05 - Driver matching ----------
+  /bookings/{bookingId}/matching:
+    $ref: './paths/fr05-matching.yaml#/matching'
+  /bookings/{bookingId}/matching/attempts:
+    $ref: './paths/fr05-matching.yaml#/matchingAttempts'
+  /driver-offers/{offerId}:
+    $ref: './paths/fr05-matching.yaml#/offerById'
+  /driver-offers/{offerId}/accept:
+    $ref: './paths/fr05-matching.yaml#/acceptOffer'
+  /driver-offers/{offerId}/reject:
+    $ref: './paths/fr05-matching.yaml#/rejectOffer'
+
+  # ---------- FR06 - Trips ----------
+  /trips:
+    $ref: './paths/fr06-trips.yaml#/trips'
+  /trips/{tripId}:
+    $ref: './paths/fr06-trips.yaml#/tripById'
+  /trips/{tripId}/status:
+    $ref: './paths/fr06-trips.yaml#/tripStatus'
+  /trips/{tripId}/tracking:
+    $ref: './paths/fr06-trips.yaml#/tripTracking'
+
+  # ---------- FR07 - Fare & Payment ----------
+  /trips/{tripId}/fare:
+    $ref: './paths/fr07-payments.yaml#/tripFare'
+  /payments:
+    $ref: './paths/fr07-payments.yaml#/payments'
+  /payments/{paymentId}:
+    $ref: './paths/fr07-payments.yaml#/paymentById'
+  /payments/{paymentId}/retry:
+    $ref: './paths/fr07-payments.yaml#/retryPayment'
+  /payments/webhooks/provider:
+    $ref: './paths/fr07-payments.yaml#/providerWebhook'
+
+  # ---------- FR08 - Notifications ----------
+  /notifications:
+    $ref: './paths/fr08-notifications.yaml#/notifications'
+  /notifications/{notificationId}/read:
+    $ref: './paths/fr08-notifications.yaml#/markRead'
+  /notification-channels:
+    $ref: './paths/fr08-notifications.yaml#/channels'
+
+  # ---------- FR09 - Ratings ----------
+  /trips/{tripId}/rating:
+    $ref: './paths/fr09-ratings.yaml#/tripRating'
+  /drivers/{driverId}/ratings:
+    $ref: './paths/fr09-ratings.yaml#/driverRatings'
+
+  # ---------- FR10 - Operations ----------
+  /operations/customers:
+    $ref: './paths/fr10-operations.yaml#/opsCustomers'
+  /operations/drivers:
+    $ref: './paths/fr10-operations.yaml#/opsDrivers'
+  /operations/vehicles:
+    $ref: './paths/fr10-operations.yaml#/opsVehicles'
+  /operations/trips:
+    $ref: './paths/fr10-operations.yaml#/opsTrips'
+  /operations/incidents:
+    $ref: './paths/fr10-operations.yaml#/incidents'
+  /operations/incidents/{incidentId}:
+    $ref: './paths/fr10-operations.yaml#/incidentById'
+
+  # ---------- FR11 - Reports ----------
+  /reports/trips:
+    $ref: './paths/fr11-reports.yaml#/tripReport'
+  /reports/revenue:
+    $ref: './paths/fr11-reports.yaml#/revenueReport'
+  /reports/drivers:
+    $ref: './paths/fr11-reports.yaml#/driverReport'
+
+  # ---------- FR12 - Security ----------
+  /roles:
+    $ref: './paths/fr12-security.yaml#/roles'
+  /users/{userId}/roles:
+    $ref: './paths/fr12-security.yaml#/userRoles'
+  /audit-logs:
+    $ref: './paths/fr12-security.yaml#/auditLogs'
+
+  # ---------- FR13 - Locations ----------
+  /drivers/{driverId}/location:
+    $ref: './paths/fr13-locations.yaml#/driverLocation'
+  /drivers/nearby:
+    $ref: './paths/fr13-locations.yaml#/nearbyDrivers'
+  /eta:
+    $ref: './paths/fr13-locations.yaml#/eta'
+
+components:
+  securitySchemes:
+    $ref: './components/security-schemes.yaml'
